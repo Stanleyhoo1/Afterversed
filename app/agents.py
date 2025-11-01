@@ -176,12 +176,22 @@ def get_post_death_checklist(location: str,
     return data
 
 
-# --- Example call ---
-if __name__ == "__main__":
-    result = get_post_death_checklist(
-        location="London, United Kingdom",
-        relationship="spouse",
-        jurisdiction_terms="Tell Us Once, MCCD, Green Form, HMCTS Probate, Coroner",
-        additional_context="Has a will; jointly owned home; may need probate depending on asset thresholds."
-    )
-    print(json.dumps(result))
+# # --- Example call ---
+# if __name__ == "__main__":
+#     result = get_post_death_checklist(
+#         location="London, United Kingdom",
+#         relationship="spouse",
+#         jurisdiction_terms="Tell Us Once, MCCD, Green Form, HMCTS Probate, Coroner",
+#         additional_context="Has a will; jointly owned home; may need probate depending on asset thresholds."
+#     )
+#     print(json.dumps(result))
+
+# Test
+import ast, json
+
+with open("test.txt", "r") as f:
+    test_json = f.read()
+    py_obj = ast.literal_eval(test_json)  # from Python-literal string -> dict
+    data = py_obj
+
+# print(data)

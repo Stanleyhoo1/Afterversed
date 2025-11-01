@@ -1,0 +1,1489 @@
+{'meta': {'assumptions': ['The deceased had a valid will.',
+                          'The primary relationship is spouse.',
+                          'The home was jointly owned, likely passing by '
+                          'survivorship.',
+                          'The spouse is the executor or one of the executors, '
+                          'or is actively involved in the estate '
+                          'administration.',
+                          'Death occurred in England & Wales.'],
+          'disclaimer': 'This checklist provides general guidance and is not a '
+                        'substitute for professional legal or financial '
+                        'advice. Laws and procedures can change. Always '
+                        'consult with legal and financial professionals for '
+                        'specific advice tailored to your situation.',
+          'generated_at': '2024-07-30T12:00:00Z',
+          'jurisdiction_terms': ['Tell Us Once',
+                                 'MCCD',
+                                 'Green Form',
+                                 'HMCTS Probate',
+                                 'Coroner',
+                                 'Inheritance Tax'],
+          'location': 'London, United Kingdom',
+          'version': '1.1'},
+ 'steps': [{'action_type': ['in-person', 'phone'],
+            'agencies_contacts': [{'address': None,
+                                   'name': 'Attending Doctor/Hospital',
+                                   'phone': None,
+                                   'url': None},
+                                  {'address': None,
+                                   'name': "HM Coroner's Office (if "
+                                           'applicable)',
+                                   'phone': None,
+                                   'url': 'https://www.gov.uk/after-a-death/when-a-death-is-referred-to-a-coroner'}],
+            'ai_tasks': [],
+            'automatable': False,
+            'automation_reason': 'Requires medical professional assessment and '
+                                 'certification; involves physical collection '
+                                 'or direct communication.',
+            'cost_notes': 'No direct cost for the MCCD itself.',
+            'data_fields_needed': ["Deceased's full name",
+                                   'Date of death',
+                                   'Place of death'],
+            'deadline': {'absolute_if_known': None,
+                         'relative': 'within 1-5 days (typically, if not '
+                                     'referred to Coroner)'},
+            'details': 'This certificate, known as the MCCD, is crucial for '
+                       'registering the death. If the death was unexpected, '
+                       'violent, or the cause is unknown, it may be reported '
+                       'to the Coroner, which will alter the process for '
+                       'obtaining the certificate and registering the death.',
+            'documents_required': [{'name': "Deceased's NHS number",
+                                    'notes': 'Helpful but not always essential '
+                                             'for medical staff.',
+                                    'source': "Deceased's records"}],
+            'evidence_of_completion': 'Original Medical Certificate of Cause '
+                                      'of Death (MCCD)',
+            'forms': [],
+            'human_tasks': ['Collect the MCCD from the hospital or GP surgery.',
+                            'Communicate with medical staff if there are '
+                            'delays or questions.'],
+            'id': 'S001',
+            'order': 1,
+            'prerequisites': [],
+            'responsible_party': 'Spouse',
+            'risk_notes': 'Delays can impact subsequent steps like registering '
+                          'the death.',
+            'substeps': [{'action_type': ['phone'],
+                          'ai_tasks': [{'inputs_required': ["Doctor's name",
+                                                            'Hospital/GP name'],
+                                        'name': 'Draft phone call script',
+                                        'outputs': ['Call script']}],
+                          'automatable': True,
+                          'automation_reason': 'AI could draft a templated '
+                                               'call script and log outcome.',
+                          'description': 'Call the hospital or GP to confirm '
+                                         'the MCCD is ready for collection.',
+                          'forms': [],
+                          'human_tasks': ['Make phone call',
+                                          'Note collection details'],
+                          'id': 'S001-1',
+                          'title': 'Confirm MCCD availability'},
+                         {'action_type': ['in-person'],
+                          'ai_tasks': [],
+                          'automatable': False,
+                          'automation_reason': 'Requires physical presence and '
+                                               'identity verification for '
+                                               'collection.',
+                          'description': 'Go to the designated location to '
+                                         'pick up the MCCD.',
+                          'forms': [],
+                          'human_tasks': ['Travel to location',
+                                          'Collect certificate'],
+                          'id': 'S001-2',
+                          'title': 'Collect MCCD'}],
+            'summary': 'Get the official medical document stating the cause of '
+                       'death from the attending doctor or hospital.',
+            'title': 'Obtain Medical Certificate of Cause of Death (MCCD)'},
+           {'action_type': ['in-person'],
+            'agencies_contacts': [{'address': None,
+                                   'name': 'Local Register Office (London '
+                                           'Borough)',
+                                   'phone': None,
+                                   'url': 'https://www.gov.uk/register-a-death'}],
+            'ai_tasks': [{'inputs_required': ["Deceased's full name",
+                                              'Date of birth',
+                                              'Place of birth',
+                                              "Deceased's last address",
+                                              'Occupation',
+                                              "Spouse's full name",
+                                              "Spouse's occupation",
+                                              'Date of marriage'],
+                          'name': 'Pre-fill registration form data',
+                          'outputs': ['Draft registration data for '
+                                      'appointment']}],
+            'automatable': False,
+            'automation_reason': 'Requires in-person attendance for identity '
+                                 'verification and signature, and production '
+                                 'of original documents.',
+            'cost_notes': 'Cost for official copies of the Death Certificate '
+                          '(typically £11 per copy).',
+            'data_fields_needed': ["Deceased's full name",
+                                   'Date and place of birth',
+                                   'Date and place of death',
+                                   "Deceased's last address",
+                                   "Deceased's occupation",
+                                   "Spouse's full name and occupation (if "
+                                   'married)',
+                                   "Father's full name and occupation (if "
+                                   'known)',
+                                   "Mother's full name and occupation (if "
+                                   'known)'],
+            'deadline': {'absolute_if_known': None,
+                         'relative': 'within 5 days of death (unless referred '
+                                     'to Coroner)'},
+            'details': 'In England and Wales, you must register a death within '
+                       "5 days unless it's referred to the Coroner. You'll "
+                       'need the MCCD and various personal details of the '
+                       'deceased. The Registrar will issue the Death '
+                       'Certificate (official copies may cost extra) and the '
+                       'Green Form (Certificate for Burial or Cremation).',
+            'documents_required': [{'name': 'Medical Certificate of Cause of '
+                                            'Death (MCCD)',
+                                    'notes': 'Original required.',
+                                    'source': 'Doctor/Hospital'},
+                                   {'name': "Deceased's Birth Certificate",
+                                    'notes': 'Helpful, but not strictly '
+                                             'required if accurate details are '
+                                             'known.',
+                                    'source': "Deceased's records"},
+                                   {'name': "Deceased's Marriage Certificate",
+                                    'notes': 'Helpful, but not strictly '
+                                             'required if accurate details are '
+                                             'known.',
+                                    'source': "Deceased's records"},
+                                   {'name': 'Proof of identity and address for '
+                                            'the person registering (Spouse)',
+                                    'notes': 'Passport, driving licence, '
+                                             'utility bill.',
+                                    'source': 'Spouse'}],
+            'evidence_of_completion': 'Official Death Certificate, Green Form '
+                                      '(Certificate for Burial or Cremation)',
+            'forms': [],
+            'human_tasks': ['Book an appointment with the local Register '
+                            'Office.',
+                            'Gather all required documents and information.',
+                            'Attend the registration appointment.',
+                            'Purchase extra copies of the Death Certificate '
+                            '(recommended).',
+                            'Obtain the Green Form.'],
+            'id': 'S002',
+            'order': 2,
+            'prerequisites': ['S001'],
+            'responsible_party': 'Spouse',
+            'risk_notes': 'Failure to register within 5 days can lead to '
+                          'complications, potentially involving the Coroner.',
+            'substeps': [{'action_type': ['online', 'phone'],
+                          'ai_tasks': [{'inputs_required': ["Deceased's last "
+                                                            'address'],
+                                        'name': 'Locate nearest Register '
+                                                'Office and booking portal',
+                                        'outputs': ['Register Office details',
+                                                    'Booking URL']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can assist in finding the '
+                                               'correct local office and '
+                                               'navigate online booking '
+                                               'systems.',
+                          'description': 'Schedule an appointment at the local '
+                                         'Register Office.',
+                          'forms': [],
+                          'human_tasks': ['Confirm appointment date and time'],
+                          'id': 'S002-1',
+                          'title': 'Book Registrar appointment'},
+                         {'action_type': ['online'],
+                          'ai_tasks': [{'inputs_required': ['Relationship to '
+                                                            'deceased',
+                                                            "Deceased's "
+                                                            'marital status'],
+                                        'name': 'Generate document checklist',
+                                        'outputs': ['Personalized document '
+                                                    'list']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can generate a personalized '
+                                               'list of required documents '
+                                               'based on user input about '
+                                               'available information.',
+                          'description': 'Collect all necessary documents for '
+                                         'the Registrar.',
+                          'forms': [],
+                          'human_tasks': ['Locate and prepare original '
+                                          'documents'],
+                          'id': 'S002-2',
+                          'title': 'Gather documents for registration'},
+                         {'action_type': ['in-person'],
+                          'ai_tasks': [],
+                          'automatable': False,
+                          'automation_reason': 'Requires physical presence, '
+                                               'identity verification, and '
+                                               'legal declaration by the '
+                                               'informant.',
+                          'description': 'Register the death in person and '
+                                         'receive the Death Certificate and '
+                                         'Green Form.',
+                          'forms': [],
+                          'human_tasks': ['Provide details to registrar',
+                                          'Sign register',
+                                          'Collect certificates'],
+                          'id': 'S002-3',
+                          'title': 'Attend registration and obtain '
+                                   'certificates'}],
+            'summary': 'Legally register the death with the local Registrar to '
+                       'obtain the Death Certificate and Green Form.',
+            'title': 'Register the Death'},
+           {'action_type': ['in-person', 'phone', 'online'],
+            'agencies_contacts': [{'address': None,
+                                   'name': 'Local Funeral Directors',
+                                   'phone': None,
+                                   'url': None}],
+            'ai_tasks': [{'inputs_required': ['Location',
+                                              'Budget (optional)',
+                                              'Specific wishes (e.g., '
+                                              'cremation, eco-friendly)'],
+                          'name': 'Research local funeral directors and '
+                                  'compare services/prices',
+                          'outputs': ['List of funeral directors',
+                                      'Service comparison table']},
+                         {'inputs_required': ["Deceased's name",
+                                              'Date of death',
+                                              'Type of service required'],
+                          'name': 'Draft initial email to funeral directors',
+                          'outputs': ['Draft email']}],
+            'automatable': True,
+            'automation_reason': 'Researching funeral directors, comparing '
+                                 'prices, and drafting initial communication '
+                                 'can be automated. The final decision and '
+                                 'booking require human interaction.',
+            'cost_notes': 'Significant cost; usually paid from the estate. '
+                          'Payment plans or advances may be possible.',
+            'data_fields_needed': ["Deceased's full name",
+                                   'Date of death',
+                                   'Funeral preferences (if known)'],
+            'deadline': {'absolute_if_known': None,
+                         'relative': 'within 1-3 weeks (flexible)'},
+            'details': 'This can be done concurrently with or shortly after '
+                       'registering the death. Review the will for any '
+                       'specific funeral wishes. Contact funeral directors to '
+                       'discuss options (burial/cremation, type of service, '
+                       'costs). The Green Form is essential for the funeral '
+                       'director to proceed with burial or cremation.',
+            'documents_required': [{'name': 'Green Form (Certificate for '
+                                            'Burial or Cremation)',
+                                    'notes': 'Given to funeral director.',
+                                    'source': 'Register Office'},
+                                   {'name': "Deceased's Will",
+                                    'notes': 'To check for funeral wishes.',
+                                    'source': "Deceased's records"}],
+            'evidence_of_completion': "Funeral Director's contract/invoice",
+            'forms': [],
+            'human_tasks': ['Contact funeral directors.',
+                            'Review the will for funeral wishes.',
+                            'Discuss and finalise arrangements.',
+                            'Sign contracts.'],
+            'id': 'S003',
+            'order': 3,
+            'prerequisites': ['S002'],
+            'responsible_party': 'Spouse',
+            'risk_notes': 'Emotional decisions under pressure; ensure clear '
+                          'understanding of costs.',
+            'substeps': [{'action_type': ['online', 'in-person'],
+                          'ai_tasks': [{'inputs_required': ['Digital copy of '
+                                                            'will'],
+                                        'name': 'Extract funeral wishes from '
+                                                'will',
+                                        'outputs': ['Summary of funeral '
+                                                    'wishes']}],
+                          'automatable': True,
+                          'automation_reason': 'AI could scan a digital will '
+                                               'for keywords related to '
+                                               'funeral arrangements.',
+                          'description': 'Locate and read the will to see if '
+                                         'specific funeral instructions were '
+                                         'left.',
+                          'forms': [],
+                          'human_tasks': ['Review physical will'],
+                          'id': 'S003-1',
+                          'title': 'Consult will for funeral wishes'},
+                         {'action_type': ['phone', 'online'],
+                          'ai_tasks': [{'inputs_required': ['Location',
+                                                            'Basic service '
+                                                            'needs'],
+                                        'name': 'Generate contact list and '
+                                                'questions',
+                                        'outputs': ['List of funeral directors '
+                                                    'with contact info',
+                                                    'Questionnaire']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can generate a list of '
+                                               'questions to ask and draft '
+                                               'emails/phone scripts.',
+                          'description': 'Reach out to several funeral '
+                                         'directors to gather quotes and '
+                                         'discuss options.',
+                          'forms': [],
+                          'human_tasks': ['Make calls/send emails',
+                                          'Compare services'],
+                          'id': 'S003-2',
+                          'title': 'Contact funeral directors'},
+                         {'action_type': ['in-person', 'phone'],
+                          'ai_tasks': [],
+                          'automatable': False,
+                          'automation_reason': 'Requires personal '
+                                               'decision-making, emotional '
+                                               'engagement, and signing '
+                                               'contracts.',
+                          'description': 'Confirm all details and book the '
+                                         'funeral service.',
+                          'forms': [],
+                          'human_tasks': ['Approve plans', 'Sign agreements'],
+                          'id': 'S003-3',
+                          'title': 'Finalise and book funeral'}],
+            'summary': "Arrange the funeral according to the deceased's wishes "
+                       '(if known) and family preferences.',
+            'title': 'Make Funeral Arrangements'},
+           {'action_type': ['online', 'phone', 'in-person'],
+            'agencies_contacts': [{'address': None,
+                                   'name': 'Department for Work and Pensions '
+                                           '(DWP)',
+                                   'phone': None,
+                                   'url': None},
+                                  {'address': None,
+                                   'name': 'HM Revenue & Customs (HMRC)',
+                                   'phone': None,
+                                   'url': None},
+                                  {'address': None,
+                                   'name': 'Passport Office',
+                                   'phone': None,
+                                   'url': None},
+                                  {'address': None,
+                                   'name': 'Driver and Vehicle Licensing '
+                                           'Agency (DVLA)',
+                                   'phone': None,
+                                   'url': None},
+                                  {'address': None,
+                                   'name': 'Local Council (for Council Tax, '
+                                           'housing benefit, blue badge)',
+                                   'phone': None,
+                                   'url': None}],
+            'ai_tasks': [{'inputs_required': ["Deceased's full name",
+                                              'Date of birth',
+                                              'NHS number',
+                                              'National Insurance number',
+                                              'Passport number',
+                                              'Driving licence number',
+                                              'Details of any '
+                                              'benefits/services received'],
+                          'name': 'Gather required data for Tell Us Once',
+                          'outputs': ['Organised data for service']}],
+            'automatable': True,
+            'automation_reason': 'Data entry for the Tell Us Once service can '
+                                 'be assisted, and relevant data points '
+                                 'extracted from existing records.',
+            'cost_notes': 'No direct cost.',
+            'data_fields_needed': ["Deceased's full name",
+                                   'Date of birth',
+                                   'Date of death',
+                                   'National Insurance number',
+                                   'Passport number',
+                                   'Driving licence number',
+                                   'Details of benefits/pensions received',
+                                   "Spouse's NI number and date of birth"],
+            'deadline': {'absolute_if_known': None,
+                         'relative': 'as soon as possible after registering '
+                                     'the death'},
+            'details': 'The Tell Us Once service allows you to report a death '
+                       'to most government organisations in one go. You will '
+                       'need the Death Certificate details and various '
+                       'personal details of the deceased and the person '
+                       'notifying. It notifies DWP, HMRC, Passport Office, '
+                       'DVLA, local councils for benefits/housing/council tax, '
+                       'and more. You will receive a reference number.',
+            'documents_required': [{'name': 'Death Certificate',
+                                    'notes': 'Reference details needed.',
+                                    'source': 'Register Office'},
+                                   {'name': 'Tell Us Once reference number '
+                                            '(from Registrar)',
+                                    'notes': 'If provided, speeds up '
+                                             'online/phone service.',
+                                    'source': 'Register Office (sometimes '
+                                              'given at registration)'},
+                                   {'name': "Deceased's National Insurance "
+                                            'number',
+                                    'notes': None,
+                                    'source': "Deceased's records"},
+                                   {'name': "Deceased's passport number",
+                                    'notes': 'If they had one.',
+                                    'source': "Deceased's passport"},
+                                   {'name': "Deceased's driving licence number",
+                                    'notes': 'If they had one.',
+                                    'source': "Deceased's driving licence"},
+                                   {'name': 'Details of any benefits or '
+                                            'services the deceased was '
+                                            'receiving',
+                                    'notes': None,
+                                    'source': "Deceased's records"},
+                                   {'name': "Spouse's details (National "
+                                            'Insurance number, etc.)',
+                                    'notes': 'If claiming joint benefits.',
+                                    'source': 'Spouse'}],
+            'evidence_of_completion': 'Tell Us Once reference number',
+            'forms': [{'name': 'Tell Us Once service',
+                       'notes': 'Most convenient way to notify multiple '
+                                'government departments.',
+                       'submission': 'online/phone/in-person (depending on '
+                                     'local registrar)',
+                       'url': 'https://www.gov.uk/tell-us-once'}],
+            'human_tasks': ['Access the Tell Us Once service (online or '
+                            'phone/in-person if offered by local registrar).',
+                            'Provide all requested information.',
+                            'Note the reference number.'],
+            'id': 'S004',
+            'order': 4,
+            'prerequisites': ['S002'],
+            'responsible_party': 'Spouse',
+            'risk_notes': 'Failure to notify can lead to overpayment of '
+                          'benefits which will need to be repaid.',
+            'substeps': [{'action_type': ['online'],
+                          'ai_tasks': [{'inputs_required': ["Deceased's basic "
+                                                            'details'],
+                                        'name': 'Generate data collection '
+                                                'checklist',
+                                        'outputs': ['Checklist of data points '
+                                                    'for Tell Us Once']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can provide a comprehensive '
+                                               'checklist of data fields, '
+                                               'guiding the user to retrieve '
+                                               'them.',
+                          'description': 'Collect all necessary personal and '
+                                         'financial details before starting '
+                                         'the service.',
+                          'forms': [],
+                          'human_tasks': ['Locate documents and retrieve '
+                                          'information'],
+                          'id': 'S004-1',
+                          'title': 'Gather information for Tell Us Once'},
+                         {'action_type': ['online', 'phone', 'in-person'],
+                          'ai_tasks': [{'inputs_required': ['All data gathered '
+                                                            'in S004-1'],
+                                        'name': 'Assist with Tell Us Once data '
+                                                'entry',
+                                        'outputs': ['Completed form (if '
+                                                    'automatable '
+                                                    'submission)']}],
+                          'automatable': True,
+                          'automation_reason': 'While the submission is via a '
+                                               'government portal, an AI could '
+                                               'pre-fill the form data if the '
+                                               'interface allowed or guide the '
+                                               'user through the process, '
+                                               'prompting for inputs.',
+                          'description': 'Use the online, phone, or in-person '
+                                         'service to notify government '
+                                         'agencies.',
+                          'forms': [{'name': 'Tell Us Once service',
+                                     'url': 'https://www.gov.uk/tell-us-once'}],
+                          'human_tasks': ['Input data',
+                                          'Confirm submission',
+                                          'Record reference number'],
+                          'id': 'S004-2',
+                          'title': 'Complete Tell Us Once notification'}],
+            'summary': "Use the government's 'Tell Us Once' service to inform "
+                       'multiple agencies about the death simultaneously.',
+            'title': 'Notify Government Agencies via Tell Us Once Service'},
+           {'action_type': ['in-person', 'phone', 'online'],
+            'agencies_contacts': [{'address': None,
+                                   'name': "Deceased's Solicitor",
+                                   'phone': None,
+                                   'url': None}],
+            'ai_tasks': [{'inputs_required': ["Deceased's name",
+                                              'Known solicitor details'],
+                          'name': 'Search for digital copy of will',
+                          'outputs': ['Potential locations of digital will']},
+                         {'inputs_required': ['Digital copy of will'],
+                          'name': 'Extract key information from will',
+                          'outputs': ['Executor names',
+                                      'Beneficiary names',
+                                      'Specific legacies']}],
+            'automatable': True,
+            'automation_reason': 'Searching for the will (digital records, '
+                                 'solicitor databases), and extracting key '
+                                 'information (executors, beneficiaries) from '
+                                 'a digital copy can be automated.',
+            'cost_notes': 'Solicitor may charge for storage or retrieval.',
+            'data_fields_needed': ['Executor names and contact details',
+                                   'Beneficiary names and contact details'],
+            'deadline': {'absolute_if_known': None,
+                         'relative': 'as soon as possible after death'},
+            'details': 'The will outlines how the deceased wished their estate '
+                       'to be distributed and names the executor(s) '
+                       'responsible for carrying out these wishes. As the '
+                       "spouse, you may be named as an executor. It's crucial "
+                       'to find the original will (not a copy).',
+            'documents_required': [{'name': 'Original Will',
+                                    'notes': 'The original is required for '
+                                             'probate.',
+                                    'source': "Deceased's records/Solicitor"}],
+            'evidence_of_completion': 'Original Will located and reviewed',
+            'forms': [],
+            'human_tasks': ["Search deceased's personal papers and safe places "
+                            'for the original will.',
+                            'Contact any known solicitors the deceased used.',
+                            "Read and understand the will's contents.",
+                            'Contact other named executors, if any.'],
+            'id': 'S005',
+            'order': 5,
+            'prerequisites': [],
+            'responsible_party': 'Spouse/Executor',
+            'risk_notes': 'If the original will cannot be found, proving its '
+                          'contents or validity becomes difficult.',
+            'substeps': [{'action_type': ['in-person', 'phone'],
+                          'ai_tasks': [],
+                          'automatable': False,
+                          'automation_reason': 'Requires physical search of '
+                                               'property and personal '
+                                               'discretion.',
+                          'description': "Systematically search the deceased's "
+                                         'belongings, safe deposits, and '
+                                         'contact any known solicitors.',
+                          'forms': [],
+                          'human_tasks': ['Search home',
+                                          'Check safe deposit boxes',
+                                          'Contact solicitor'],
+                          'id': 'S005-1',
+                          'title': 'Search for original will'},
+                         {'action_type': ['online', 'in-person'],
+                          'ai_tasks': [{'inputs_required': ['Digital copy of '
+                                                            'will'],
+                                        'name': 'Extract key roles from will '
+                                                'text',
+                                        'outputs': ['List of executors',
+                                                    'List of beneficiaries']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can scan a digital will to '
+                                               'extract names and roles.',
+                          'description': 'Read the will to determine who is '
+                                         'appointed as executor(s) and who the '
+                                         'beneficiaries are.',
+                          'forms': [],
+                          'human_tasks': ['Verify extracted information',
+                                          'Contact co-executors'],
+                          'id': 'S005-2',
+                          'title': 'Identify executors and beneficiaries'}],
+            'summary': "Find the deceased's will to understand their wishes "
+                       'and identify the appointed executors.',
+            'title': 'Locate and Review the Will, Identify Executors'},
+           {'action_type': ['phone', 'online', 'post'],
+            'agencies_contacts': [],
+            'ai_tasks': [{'inputs_required': ['Bank statements (digital)',
+                                              'Utility bills (digital)',
+                                              'Pension statements (digital)'],
+                          'name': 'Identify organisations from financial '
+                                  'statements',
+                          'outputs': ['List of organisations to notify',
+                                      'Relevant account numbers']},
+                         {'inputs_required': ["Deceased's full name",
+                                              'Date of death',
+                                              'Account number',
+                                              'Organisation name'],
+                          'name': 'Draft notification letters/emails',
+                          'outputs': ['Templated notification letter/email']}],
+            'automatable': True,
+            'automation_reason': 'Identifying all organisations from bank '
+                                 'statements, drafting notification '
+                                 'letters/emails, and tracking communication '
+                                 'can be automated. Some institutions offer '
+                                 'online notification forms.',
+            'cost_notes': 'Cost of certified copies of the Death Certificate.',
+            'data_fields_needed': ["Deceased's full name",
+                                   'Date of death',
+                                   'Account numbers',
+                                   'Policy numbers',
+                                   'Organisation contact details'],
+            'deadline': {'absolute_if_known': None,
+                         'relative': 'within 2-4 weeks'},
+            'details': 'While Tell Us Once covers many government agencies, '
+                       "you'll need to directly contact private companies. "
+                       'This includes banks, building societies, credit card '
+                       'companies, pension providers, life insurance '
+                       'companies, utility providers, landlords, mortgage '
+                       'providers, and subscription services. Provide them '
+                       'with certified copies of the Death Certificate and '
+                       'inquire about joint accounts, outstanding balances, '
+                       'and next steps.',
+            'documents_required': [{'name': 'Certified copies of Death '
+                                            'Certificate',
+                                    'notes': 'Many organisations require '
+                                             'these; do not send the original.',
+                                    'source': 'Register Office'},
+                                   {'name': 'Account/Policy numbers',
+                                    'notes': None,
+                                    'source': "Deceased's records"}],
+            'evidence_of_completion': 'Correspondence with organisations '
+                                      '(emails, letters, call logs), account '
+                                      'closure confirmations.',
+            'forms': [],
+            'human_tasks': ['Compile a comprehensive list of all organisations '
+                            'the deceased had dealings with.',
+                            'Gather account numbers and policy details.',
+                            'Contact each organisation, providing a certified '
+                            'copy of the Death Certificate.',
+                            'Inquire about any death-in-service benefits, '
+                            'pensions, or life insurance payouts.',
+                            'Cancel or transfer utilities and subscriptions.'],
+            'id': 'S006',
+            'order': 6,
+            'prerequisites': ['S002', 'S005'],
+            'responsible_party': 'Spouse/Executor',
+            'risk_notes': 'Failure to notify can lead to fraudulent activity, '
+                          'missed benefit claims, or ongoing charges.',
+            'substeps': [{'action_type': ['online'],
+                          'ai_tasks': [{'inputs_required': ['Digital bank '
+                                                            'statements',
+                                                            'Utility bills',
+                                                            'Insurance '
+                                                            'policies'],
+                                        'name': 'Scan documents for '
+                                                'organisations',
+                                        'outputs': ['List of organisations '
+                                                    'with contact details']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can scan digital financial '
+                                               'records and correspondence to '
+                                               'identify recurring payments, '
+                                               'accounts, and senders, '
+                                               'creating a comprehensive list.',
+                          'description': 'Go through bank statements, bills, '
+                                         'and mail to identify all companies '
+                                         'to be notified.',
+                          'forms': [],
+                          'human_tasks': ['Manually review physical documents'],
+                          'id': 'S006-1',
+                          'title': 'Create a list of organisations'},
+                         {'action_type': ['online', 'post'],
+                          'ai_tasks': [{'inputs_required': ['Organisation name',
+                                                            'Account number',
+                                                            "Deceased's "
+                                                            'details'],
+                                        'name': 'Generate personalised '
+                                                'notification templates',
+                                        'outputs': ['Draft letter/email']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can generate personalised '
+                                               'notification templates for '
+                                               'each organisation, pre-filling '
+                                               'known data and guiding on '
+                                               'document attachment.',
+                          'description': 'Prepare and send formal '
+                                         'notifications to each organisation '
+                                         'with required documents.',
+                          'forms': [],
+                          'human_tasks': ['Review templates',
+                                          'Attach certified death certificate '
+                                          'copies',
+                                          'Send communications'],
+                          'id': 'S006-2',
+                          'title': 'Draft and send notification '
+                                   'letters/emails'}],
+            'summary': 'Notify all financial institutions, utilities, and '
+                       'other relevant companies about the death.',
+            'title': 'Inform Banks, Pension Providers, Insurers, and Other '
+                     'Organisations'},
+           {'action_type': ['online', 'phone'],
+            'agencies_contacts': [{'address': None,
+                                   'name': 'HMCTS Probate (for guidance)',
+                                   'phone': None,
+                                   'url': 'https://www.gov.uk/applying-for-probate'},
+                                  {'address': None,
+                                   'name': 'Solicitor specialising in probate',
+                                   'phone': None,
+                                   'url': None}],
+            'ai_tasks': [{'inputs_required': ['List of bank accounts',
+                                              'Investment portfolios',
+                                              'Property details',
+                                              'Debts'],
+                          'name': 'Categorise assets and liabilities',
+                          'outputs': ['Categorised summary of estate']},
+                         {'inputs_required': ['Valuations for all assets and '
+                                              'liabilities'],
+                          'name': 'Calculate estimated estate value',
+                          'outputs': ['Total gross estate value',
+                                      'Total net estate value']},
+                         {'inputs_required': ['Total estate value',
+                                              'Asset ownership structure '
+                                              '(joint/sole)'],
+                          'name': 'Probate requirement assessment',
+                          'outputs': ['Recommendation on probate need']}],
+            'automatable': True,
+            'automation_reason': 'AI can assist in categorising '
+                                 'assets/liabilities, calculating total estate '
+                                 'value, and comparing against probate '
+                                 'thresholds to provide a recommendation.',
+            'cost_notes': 'Solicitor fees if professional advice is sought.',
+            'data_fields_needed': ['Value of each asset (property, savings, '
+                                   'investments, personal effects)',
+                                   'Amount of each liability (loans, credit '
+                                   'cards, mortgage)'],
+            'deadline': {'absolute_if_known': None,
+                         'relative': 'before administering the estate'},
+            'details': 'Probate is a legal process required to gain the legal '
+                       "right to deal with someone's estate when they die. "
+                       "It's usually needed if the deceased owned assets "
+                       'solely in their name (e.g., bank accounts over a '
+                       'certain threshold, shares, investments, property not '
+                       "jointly owned as 'joint tenants'). As the home is "
+                       'jointly owned, it automatically passes to the spouse '
+                       '(by survivorship) and does not require probate. '
+                       'However, other assets may still necessitate it. '
+                       'Collect valuations for all assets and liabilities to '
+                       'calculate the total estate value.',
+            'documents_required': [{'name': 'Bank statements',
+                                    'notes': 'Showing balances at date of '
+                                             'death.',
+                                    'source': 'Banks'},
+                                   {'name': 'Investment statements',
+                                    'notes': 'Showing values at date of death.',
+                                    'source': 'Investment providers'},
+                                   {'name': 'Property deeds/records',
+                                    'notes': 'To confirm ownership structure '
+                                             '(joint tenants vs tenants in '
+                                             'common).',
+                                    'source': 'Land Registry'},
+                                   {'name': 'Loan/Mortgage statements',
+                                    'notes': 'Showing outstanding balances.',
+                                    'source': 'Lenders'}],
+            'evidence_of_completion': 'Estate asset/liability spreadsheet or '
+                                      "solicitor's advice letter",
+            'forms': [],
+            'human_tasks': ['List all assets (bank accounts, investments, '
+                            'property not jointly owned, vehicles, personal '
+                            'possessions) and liabilities (debts, mortgage).',
+                            'Obtain valuations for all assets and liabilities '
+                            'at the date of death.',
+                            'Determine which assets fall outside of probate '
+                            '(e.g., jointly owned property passing by '
+                            'survivorship, small bank accounts).',
+                            'Calculate the total value of assets requiring '
+                            'probate.',
+                            'Consult with a solicitor if unsure about probate '
+                            'requirements.'],
+            'id': 'S007',
+            'order': 7,
+            'prerequisites': ['S005', 'S006'],
+            'responsible_party': 'Executor',
+            'risk_notes': 'Incorrectly determining probate need can lead to '
+                          'legal complications or delays in estate '
+                          'administration.',
+            'substeps': [{'action_type': ['online'],
+                          'ai_tasks': [{'inputs_required': ['Bank statements',
+                                                            'Bills',
+                                                            'Property details'],
+                                        'name': 'Create asset/liability '
+                                                'inventory',
+                                        'outputs': ['Structured inventory '
+                                                    'list']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can assist in categorising '
+                                               'assets/liabilities from '
+                                               'scanned documents and prompt '
+                                               'for missing items.',
+                          'description': 'List all possessions and debts of '
+                                         'the deceased.',
+                          'forms': [],
+                          'human_tasks': ['Review documents',
+                                          'Add personal effects'],
+                          'id': 'S007-1',
+                          'title': 'Inventory assets and liabilities'},
+                         {'action_type': ['phone', 'online'],
+                          'ai_tasks': [{'inputs_required': ['Asset type',
+                                                            'Institution name',
+                                                            'Account number'],
+                                        'name': 'Draft valuation request '
+                                                'letters/emails',
+                                        'outputs': ['Draft request']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can draft requests for '
+                                               'valuations to relevant '
+                                               'institutions based on '
+                                               'identified assets.',
+                          'description': 'Contact banks, investment firms, and '
+                                         'obtain property valuations.',
+                          'forms': [],
+                          'human_tasks': ['Contact institutions',
+                                          'Collect valuation letters'],
+                          'id': 'S007-2',
+                          'title': 'Obtain valuations at date of death'},
+                         {'action_type': ['online'],
+                          'ai_tasks': [{'inputs_required': ['Gross estate '
+                                                            'value',
+                                                            'Net estate value',
+                                                            'Ownership type '
+                                                            'for key assets'],
+                                        'name': 'Probate assessment algorithm',
+                                        'outputs': ['Decision: Probate '
+                                                    'Required / Not '
+                                                    'Required']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can perform calculations '
+                                               'based on input values and '
+                                               'apply known legal thresholds '
+                                               'to determine if probate is '
+                                               'required.',
+                          'description': 'Sum up all assets and liabilities '
+                                         'and compare to probate thresholds.',
+                          'forms': [],
+                          'human_tasks': ['Review AI assessment',
+                                          'Consult solicitor if complex'],
+                          'id': 'S007-3',
+                          'title': 'Calculate estate value and assess probate '
+                                   'need'}],
+            'summary': "Assess the deceased's assets and liabilities to "
+                       'determine if a Grant of Probate is required.',
+            'title': 'Determine Need for Probate'},
+           {'action_type': ['online', 'post'],
+            'agencies_contacts': [{'address': 'HMCTS Probate, PO Box 12625, '
+                                              'Harlow CM20 9SE',
+                                   'name': 'HMCTS Probate',
+                                   'phone': '0300 303 0648',
+                                   'url': 'https://www.gov.uk/applying-for-probate'}],
+            'ai_tasks': [{'inputs_required': ['Executor details',
+                                              "Deceased's details",
+                                              'Estate value breakdown'],
+                          'name': 'Pre-fill PA1 form data',
+                          'outputs': ['Draft PA1 form']},
+                         {'inputs_required': ['Estate type (will/no will)',
+                                              'IHT status'],
+                          'name': 'Generate document submission checklist',
+                          'outputs': ['List of required documents for HMCTS']}],
+            'automatable': True,
+            'automation_reason': 'AI can assist in pre-filling the PA1 form '
+                                 'with estate and personal details, and guide '
+                                 'on required supporting documents.',
+            'cost_notes': 'Probate application fee (currently £273 for estates '
+                          'over £5,000, no fee for smaller estates).',
+            'data_fields_needed': ['All details of the deceased (name, '
+                                   'address, date of birth/death)',
+                                   'All executor details',
+                                   'Full details of the estate assets and '
+                                   'liabilities',
+                                   'Beneficiary details (from will)'],
+            'deadline': {'absolute_if_known': None,
+                         'relative': 'within 6-12 months of death (no strict '
+                                     'legal deadline, but recommended for '
+                                     'efficient administration)'},
+            'details': 'If the assessment in S007 indicates probate is '
+                       'required, the executor(s) must apply for a Grant of '
+                       'Probate (or Letters of Administration if no will). '
+                       'This involves completing forms (PA1 online or paper) '
+                       "and providing details of the estate's value. The "
+                       'application requires sending the original will and '
+                       'Death Certificate. There is an application fee unless '
+                       'the estate is very small. Once granted, the '
+                       'executor(s) can then legally access and manage the '
+                       "deceased's assets.",
+            'documents_required': [{'name': 'Original Will',
+                                    'notes': 'Must be the original, not a '
+                                             'copy.',
+                                    'source': 'Executor'},
+                                   {'name': 'Official Death Certificate',
+                                    'notes': 'Original or certified copy.',
+                                    'source': 'Register Office'},
+                                   {'name': 'Inheritance Tax forms (IHT205 or '
+                                            'IHT400, if applicable)',
+                                    'notes': 'Submitted to HMRC first, then '
+                                             'reference number used for '
+                                             'probate.',
+                                    'source': 'HMRC'}],
+            'evidence_of_completion': 'Grant of Probate document',
+            'forms': [{'name': 'PA1 (Application for a Grant of Probate)',
+                       'notes': 'Can apply online for most wills, or by post '
+                                'for more complex cases.',
+                       'submission': 'online/post',
+                       'url': 'https://www.gov.uk/applying-for-probate/apply-for-probate'}],
+            'human_tasks': ['Complete the PA1 application form (online or '
+                            'paper).',
+                            'Gather supporting documents (original will, '
+                            'certified death certificate, IHT forms if '
+                            'applicable).',
+                            'Pay the application fee.',
+                            'Submit the application to HMCTS Probate.',
+                            'Respond to any queries from HMCTS.'],
+            'id': 'S008',
+            'order': 8,
+            'prerequisites': ['S005', 'S007'],
+            'responsible_party': 'Executor',
+            'risk_notes': 'Errors in the application can lead to significant '
+                          'delays. Incorrect IHT calculations can lead to '
+                          'penalties.',
+            'substeps': [{'action_type': ['online', 'post'],
+                          'ai_tasks': [{'inputs_required': ['Net estate value',
+                                                            'Residence '
+                                                            'Nil-Rate Band '
+                                                            'applicability',
+                                                            'Gifts made by '
+                                                            'deceased'],
+                                        'name': 'Calculate Inheritance Tax '
+                                                'liability',
+                                        'outputs': ['Estimated IHT due']},
+                                       {'inputs_required': ['Estate details',
+                                                            'Beneficiary '
+                                                            'details'],
+                                        'name': 'Pre-fill IHT forms',
+                                        'outputs': ['Draft IHT forms']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can assist in calculating '
+                                               'IHT liability and pre-filling '
+                                               'IHT forms (IHT205/IHT400) '
+                                               'based on estate valuation '
+                                               'data.',
+                          'description': 'If Inheritance Tax is due, or if the '
+                                         'estate is above certain thresholds, '
+                                         'complete and submit the relevant IHT '
+                                         'form to HMRC.',
+                          'forms': [{'name': 'IHT205 (for estates below IHT '
+                                             'threshold)',
+                                     'url': 'https://www.gov.uk/government/publications/inheritance-tax-return-of-estate-information-iht205'},
+                                    {'name': 'IHT400 (for estates above IHT '
+                                             'threshold)',
+                                     'url': 'https://www.gov.uk/government/publications/inheritance-tax-account-iht400'}],
+                          'human_tasks': ['Review IHT calculations',
+                                          'Submit IHT form to HMRC',
+                                          'Obtain IHT reference number (for '
+                                          'probate)'],
+                          'id': 'S008-1',
+                          'title': 'Prepare IHT forms (if applicable)'},
+                         {'action_type': ['online', 'post'],
+                          'ai_tasks': [{'inputs_required': ["Deceased's "
+                                                            'details',
+                                                            'Executor details',
+                                                            'Estate valuation '
+                                                            'data'],
+                                        'name': 'Populate PA1 form',
+                                        'outputs': ['Pre-filled PA1 form '
+                                                    'draft']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can pre-populate the PA1 '
+                                               'form fields using previously '
+                                               'gathered data about the '
+                                               'deceased, executors, and '
+                                               'estate values.',
+                          'description': 'Fill out the application form for '
+                                         'Grant of Probate, either online or '
+                                         'on paper.',
+                          'forms': [{'name': 'PA1',
+                                     'url': 'https://www.gov.uk/applying-for-probate/apply-for-probate'}],
+                          'human_tasks': ['Review and verify all information',
+                                          'Sign declarations'],
+                          'id': 'S008-2',
+                          'title': 'Complete PA1 form'},
+                         {'action_type': ['online', 'post'],
+                          'ai_tasks': [],
+                          'automatable': False,
+                          'automation_reason': 'Requires sending original '
+                                               'legal documents (will, death '
+                                               'certificate) and making a '
+                                               'payment, often requiring '
+                                               'personal authentication for '
+                                               'payment.',
+                          'description': 'Send the completed PA1 form, '
+                                         'original will, and required '
+                                         'documents to HMCTS Probate and pay '
+                                         'the application fee.',
+                          'forms': [],
+                          'human_tasks': ['Make payment',
+                                          'Post documents (if paper '
+                                          'application)',
+                                          'Submit online application'],
+                          'id': 'S008-3',
+                          'title': 'Submit probate application and pay fee'}],
+            'summary': 'If probate is needed, apply to HMCTS for a Grant of '
+                       'Probate, which gives legal authority to the '
+                       'executor(s).',
+            'title': 'Apply for Grant of Probate (if required)'},
+           {'action_type': ['online', 'post', 'phone'],
+            'agencies_contacts': [],
+            'ai_tasks': [{'inputs_required': ['Initial asset/liability '
+                                              'inventory',
+                                              'Correspondence with '
+                                              'institutions'],
+                          'name': 'Track assets and debts',
+                          'outputs': ['Real-time asset/debt register']},
+                         {'inputs_required': ['List of creditors',
+                                              'Amounts due',
+                                              'Estate bank account details'],
+                          'name': 'Generate payment instructions for debts',
+                          'outputs': ['Payment schedule/instructions']}],
+            'automatable': True,
+            'automation_reason': 'Tracking assets/debts, generating payment '
+                                 'instructions, and maintaining records can be '
+                                 'automated. Actual transactions usually '
+                                 'require human initiation.',
+            'cost_notes': 'Costs associated with asset sales (e.g., estate '
+                          'agent fees, solicitor fees).',
+            'data_fields_needed': ['Estate bank account details',
+                                   'Creditor details',
+                                   'Beneficiary bank details (later)'],
+            'deadline': {'absolute_if_known': None,
+                         'relative': 'within 6-12 months of death (ongoing '
+                                     'process)'},
+            'details': 'Once the Grant of Probate is received (if applicable), '
+                       "the executor(s) can start to gather the estate's "
+                       'assets (e.g., closing bank accounts, selling property '
+                       'or investments). All debts of the deceased must be '
+                       'paid from the estate before any distribution to '
+                       'beneficiaries. Funeral expenses and probate costs are '
+                       'typically prioritised.',
+            'documents_required': [{'name': 'Grant of Probate',
+                                    'notes': 'Required by financial '
+                                             'institutions to release assets.',
+                                    'source': 'HMCTS Probate'},
+                                   {'name': 'Bank statements of estate account',
+                                    'notes': 'For record-keeping.',
+                                    'source': 'Bank'},
+                                   {'name': 'Invoices for debts',
+                                    'notes': None,
+                                    'source': 'Creditors'}],
+            'evidence_of_completion': 'Estate bank account statements, '
+                                      'receipts for payments, asset transfer '
+                                      'confirmations',
+            'forms': [],
+            'human_tasks': ['Notify all asset holders of the Grant of Probate.',
+                            "Transfer funds from deceased's accounts into the "
+                            'estate account.',
+                            'Sell investments or property if required by the '
+                            'will.',
+                            'Pay all outstanding debts (funeral expenses, '
+                            'taxes, creditors) from the estate.',
+                            'Keep meticulous records of all transactions.'],
+            'id': 'S009',
+            'order': 9,
+            'prerequisites': ['S008'],
+            'responsible_party': 'Executor',
+            'risk_notes': 'Failure to pay debts correctly can lead to personal '
+                          'liability for the executor. Poor record-keeping can '
+                          'complicate final accounts.',
+            'substeps': [{'action_type': ['online', 'post', 'phone'],
+                          'ai_tasks': [{'inputs_required': ['Institution name',
+                                                            'Account number',
+                                                            'Grant of Probate '
+                                                            'details'],
+                                        'name': 'Generate asset collection '
+                                                'letters',
+                                        'outputs': ['Draft letter for asset '
+                                                    'collection']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can generate custom letters '
+                                               'to each institution, including '
+                                               'required documents and '
+                                               'instructions, and track their '
+                                               'responses.',
+                          'description': 'Contact banks, investment firms, and '
+                                         'other institutions to close accounts '
+                                         'or transfer assets to the estate.',
+                          'forms': [],
+                          'human_tasks': ['Send letters/make calls',
+                                          'Follow up on transfers'],
+                          'id': 'S009-1',
+                          'title': 'Collect assets'},
+                         {'action_type': ['online', 'post'],
+                          'ai_tasks': [{'inputs_required': ['Creditor details',
+                                                            'Amount due',
+                                                            'Payment date'],
+                                        'name': 'Debt management and payment '
+                                                'tracking',
+                                        'outputs': ['Debt payment ledger',
+                                                    'Payment confirmation '
+                                                    'messages']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can manage a ledger of '
+                                               'outstanding debts, prioritize '
+                                               'them, and generate payment '
+                                               'instructions, as well as track '
+                                               'payments made.',
+                          'description': 'Settle all outstanding debts using '
+                                         'funds from the estate.',
+                          'forms': [],
+                          'human_tasks': ['Initiate payments',
+                                          'Obtain receipts'],
+                          'id': 'S009-2',
+                          'title': 'Pay debts'}],
+            'summary': 'Collect all money due to the estate and settle any '
+                       'outstanding debts.',
+            'title': 'Gather All Estate Assets and Pay Debts'},
+           {'action_type': ['online', 'post'],
+            'agencies_contacts': [{'address': 'HM Revenue & Customs, '
+                                              'Inheritance Tax, BX9 1HT',
+                                   'name': 'HMRC Inheritance Tax',
+                                   'phone': '0300 123 1072',
+                                   'url': 'https://www.gov.uk/inheritance-tax'}],
+            'ai_tasks': [{'inputs_required': ['Full estate valuation (assets & '
+                                              'liabilities)',
+                                              'Gifts made in 7 years prior to '
+                                              'death',
+                                              'Applicable Nil-Rate Bands',
+                                              'Exemptions (e.g., spouse '
+                                              'exemption, charity exemption)'],
+                          'name': 'Calculate precise Inheritance Tax liability',
+                          'outputs': ['Final IHT amount due',
+                                      'Breakdown of calculation']},
+                         {'inputs_required': ['Estate details',
+                                              'Beneficiary details',
+                                              'Gift history'],
+                          'name': 'Pre-fill IHT400 and supporting schedules',
+                          'outputs': ['Draft IHT400 form and relevant '
+                                      'schedules']}],
+            'automatable': True,
+            'automation_reason': 'AI can calculate IHT liability, assist in '
+                                 'completing IHT forms (IHT400), and track '
+                                 'submission deadlines.',
+            'cost_notes': 'Inheritance Tax payment itself; potential penalties '
+                          'and interest for late payment/submission.',
+            'data_fields_needed': ['Detailed asset and liability valuations',
+                                   'Details of any lifetime gifts made by the '
+                                   'deceased',
+                                   'Executor and beneficiary details'],
+            'deadline': {'absolute_if_known': None,
+                         'relative': '6 months from end of month of death for '
+                                     'payment; 12 months for submitting form '
+                                     'IHT400'},
+            'details': "If the estate's value exceeds the Inheritance Tax "
+                       'threshold (£325,000, or up to £650,000 for married '
+                       'couples/civil partners due to transferable nil-rate '
+                       'band, plus Residence Nil-Rate Band if applicable), IHT '
+                       'will be due. IHT forms (IHT400) must be submitted to '
+                       'HMRC, and payment made. IHT is usually due within 6 '
+                       'months of death, with interest accruing after this '
+                       'point.',
+            'documents_required': [{'name': 'IHT400 form and schedules',
+                                    'notes': 'Full Inheritance Tax account.',
+                                    'source': 'HMRC'},
+                                   {'name': 'Valuations of all assets and '
+                                            'liabilities',
+                                    'notes': 'Supporting evidence for IHT '
+                                             'calculation.',
+                                    'source': 'Various (banks, property '
+                                              'valuers etc.)'}],
+            'evidence_of_completion': 'HMRC acknowledgement of IHT form '
+                                      'receipt, payment receipt for IHT.',
+            'forms': [{'name': 'IHT400 (Inheritance Tax Account)',
+                       'notes': 'Required for estates above the IHT threshold '
+                                'or with complex assets.',
+                       'submission': 'post',
+                       'url': 'https://www.gov.uk/government/publications/inheritance-tax-account-iht400'}],
+            'human_tasks': ['Complete IHT400 form and all relevant schedules '
+                            '(if IHT is due).',
+                            'Ensure all valuations are accurate.',
+                            'Arrange for payment of IHT by the deadline to '
+                            'avoid interest.',
+                            'Communicate with HMRC if there are any issues or '
+                            'queries.'],
+            'id': 'S010',
+            'order': 10,
+            'prerequisites': ['S007', 'S008'],
+            'responsible_party': 'Executor',
+            'risk_notes': 'Errors in IHT calculation or late payment can '
+                          'result in significant penalties and interest from '
+                          'HMRC.',
+            'substeps': [{'action_type': ['online', 'phone'],
+                          'ai_tasks': [{'inputs_required': ['Individual asset '
+                                                            'valuations',
+                                                            'Individual '
+                                                            'liability '
+                                                            'valuations'],
+                                        'name': 'Consolidate valuation data',
+                                        'outputs': ['Comprehensive estate '
+                                                    'valuation summary']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can compile and reconcile '
+                                               'all valuation data, flagging '
+                                               'any discrepancies or missing '
+                                               'information for review.',
+                          'description': 'Gather and confirm all final '
+                                         'valuations for assets and '
+                                         'liabilities at the date of death.',
+                          'forms': [],
+                          'human_tasks': ['Obtain outstanding valuations',
+                                          'Verify all figures'],
+                          'id': 'S010-1',
+                          'title': 'Finalise estate valuations for IHT'},
+                         {'action_type': ['online', 'post'],
+                          'ai_tasks': [{'inputs_required': ['Estate valuation '
+                                                            'summary',
+                                                            'Executor details',
+                                                            'Beneficiary '
+                                                            'details'],
+                                        'name': 'Pre-fill IHT400 form',
+                                        'outputs': ['Draft IHT400 for '
+                                                    'review']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can pre-populate the IHT400 '
+                                               'form based on the finalised '
+                                               'estate valuations and other '
+                                               'known details, reducing manual '
+                                               'effort and errors.',
+                          'description': 'Fill out the IHT400 and all '
+                                         'necessary schedules, then submit to '
+                                         'HMRC.',
+                          'forms': [{'name': 'IHT400',
+                                     'url': 'https://www.gov.uk/government/publications/inheritance-tax-account-iht400'}],
+                          'human_tasks': ['Review completed form thoroughly',
+                                          'Sign and send to HMRC'],
+                          'id': 'S010-2',
+                          'title': 'Complete and submit IHT400 form'},
+                         {'action_type': ['online', 'phone'],
+                          'ai_tasks': [],
+                          'automatable': False,
+                          'automation_reason': 'Requires authorisation of a '
+                                               'significant financial '
+                                               'transaction from a bank '
+                                               'account, often involving '
+                                               'security checks.',
+                          'description': 'Arrange payment of any IHT due to '
+                                         'HMRC by the deadline.',
+                          'forms': [],
+                          'human_tasks': ['Arrange payment through bank or '
+                                          'other methods',
+                                          'Obtain payment confirmation'],
+                          'id': 'S010-3',
+                          'title': 'Pay Inheritance Tax'}],
+            'summary': 'Calculate, report, and pay any Inheritance Tax due on '
+                       "the deceased's estate.",
+            'title': 'Deal with Inheritance Tax (IHT)'},
+           {'action_type': ['online', 'post'],
+            'agencies_contacts': [],
+            'ai_tasks': [{'inputs_required': ['All income and expenditure '
+                                              'records from estate '
+                                              'administration'],
+                          'name': 'Generate estate accounts summary',
+                          'outputs': ['Detailed estate accounts report']},
+                         {'inputs_required': ['Net estate value after '
+                                              'taxes/debts',
+                                              'Will clauses on distribution'],
+                          'name': 'Calculate beneficiary shares',
+                          'outputs': ['Individual beneficiary entitlements']},
+                         {'inputs_required': ['Beneficiary name',
+                                              'Amount/asset being distributed',
+                                              'Estate accounts summary'],
+                          'name': 'Draft beneficiary distribution letters',
+                          'outputs': ['Personalised distribution letter']}],
+            'automatable': True,
+            'automation_reason': 'AI can generate estate accounts, calculate '
+                                 'beneficiary shares, and draft letters to '
+                                 'beneficiaries and payment instructions.',
+            'cost_notes': 'No direct cost, but potential transfer fees.',
+            'data_fields_needed': ['Beneficiary names and contact details',
+                                   'Beneficiary bank details'],
+            'deadline': {'absolute_if_known': None,
+                         'relative': 'typically 6-12 months after death (after '
+                                     'debts/taxes paid)'},
+            'details': 'Once all debts and taxes have been paid, the '
+                       'executor(s) can distribute the remaining estate '
+                       'according to the will. This involves transferring '
+                       'specific legacies (gifts of items or cash) and then '
+                       "distributing the residuary estate (what's left) to the "
+                       "named beneficiaries. It's good practice to prepare "
+                       'estate accounts showing all income and expenditure '
+                       'before distribution.',
+            'documents_required': [{'name': 'Will',
+                                    'notes': 'To ensure correct distribution.',
+                                    'source': 'Executor'},
+                                   {'name': 'Estate accounts',
+                                    'notes': 'Detailed record of all '
+                                             'transactions.',
+                                    'source': 'Executor'}],
+            'evidence_of_completion': 'Signed receipts from beneficiaries, '
+                                      'bank transfer confirmations.',
+            'forms': [],
+            'human_tasks': ['Prepare final estate accounts for beneficiaries.',
+                            'Obtain receipts from beneficiaries for their '
+                            'share.',
+                            'Transfer assets (e.g., money, property, shares) '
+                            'to the beneficiaries.'],
+            'id': 'S011',
+            'order': 11,
+            'prerequisites': ['S009', 'S010'],
+            'responsible_party': 'Executor',
+            'risk_notes': 'Incorrect distribution can lead to legal challenges '
+                          'from beneficiaries. Ensure all steps are '
+                          'documented.',
+            'substeps': [{'action_type': ['online'],
+                          'ai_tasks': [{'inputs_required': ['All financial '
+                                                            'transaction '
+                                                            'records'],
+                                        'name': 'Generate final estate '
+                                                'accounts',
+                                        'outputs': ['Final estate accounts '
+                                                    'document']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can consolidate all '
+                                               'financial transactions into a '
+                                               'structured estate accounts '
+                                               'document, including '
+                                               'categorisation and summaries.',
+                          'description': 'Compile a full record of all money '
+                                         'received and spent by the estate.',
+                          'forms': [],
+                          'human_tasks': ['Review and verify accounts'],
+                          'id': 'S011-1',
+                          'title': 'Prepare estate accounts'},
+                         {'action_type': ['online', 'post'],
+                          'ai_tasks': [{'inputs_required': ['Beneficiary name',
+                                                            'Amount/asset to '
+                                                            'distribute'],
+                                        'name': 'Draft distribution '
+                                                'instructions and receipts',
+                                        'outputs': ['Transfer instructions',
+                                                    'Receipt forms']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can draft transfer '
+                                               "instructions and 'receipt of "
+                                               "inheritance' forms for each "
+                                               'beneficiary, streamlining the '
+                                               'process.',
+                          'description': 'Transfer assets to beneficiaries and '
+                                         'obtain their signed receipts.',
+                          'forms': [],
+                          'human_tasks': ['Initiate transfers',
+                                          'Collect signed receipts'],
+                          'id': 'S011-2',
+                          'title': 'Distribute assets and obtain receipts'}],
+            'summary': 'Transfer assets and funds to the beneficiaries as '
+                       'specified in the will.',
+            'title': 'Distribute the Estate to Beneficiaries'},
+           {'action_type': ['online', 'post'],
+            'agencies_contacts': [{'address': None,
+                                   'name': 'HMRC Bereavement Team',
+                                   'phone': '0300 200 3300',
+                                   'url': 'https://www.gov.uk/government/organisations/hm-revenue-customs/contact/bereavement-and-probate'}],
+            'ai_tasks': [{'inputs_required': ['Bank statements',
+                                              'Investment statements',
+                                              'P60/P45'],
+                          'name': 'Gather income and gain data for tax returns',
+                          'outputs': ['Categorised income and gains data']},
+                         {'inputs_required': ['Income data',
+                                              'Expense data',
+                                              'Tax codes'],
+                          'name': 'Calculate final tax liabilities/refunds',
+                          'outputs': ['Estimated tax due or refund for '
+                                      'deceased and estate']},
+                         {'inputs_required': ['Calculated tax data',
+                                              "Deceased's/Executor's details"],
+                          'name': 'Pre-fill relevant tax forms (P87, SA900)',
+                          'outputs': ['Draft tax forms']}],
+            'automatable': True,
+            'automation_reason': 'AI can gather relevant financial data '
+                                 '(income, gains, allowances), prepare '
+                                 'calculations for final tax returns, and '
+                                 'assist in form completion.',
+            'cost_notes': 'Any outstanding tax payments; potential accountant '
+                          'fees if professional help is sought.',
+            'data_fields_needed': ["Deceased's income and gains up to date of "
+                                   'death',
+                                   'Estate income and gains during '
+                                   'administration',
+                                   'Expenses of administration'],
+            'deadline': {'absolute_if_known': None,
+                         'relative': 'around 31 January following the tax year '
+                                     "of death for deceased's final return; "
+                                     'varies for estate income'},
+            'details': 'Even after death, there may be outstanding income tax '
+                       'or capital gains tax liabilities for the deceased for '
+                       'the tax year of death, or for the estate during its '
+                       'administration period. The executor is responsible for '
+                       'completing and submitting final tax returns (P87, '
+                       'SA900) and settling any amounts due or claiming '
+                       'refunds. This ensures that the tax affairs are fully '
+                       'closed off.',
+            'documents_required': [{'name': 'P60 / P45',
+                                    'notes': 'For final income reporting.',
+                                    'source': 'Employer'},
+                                   {'name': 'Bank statements',
+                                    'notes': 'To track interest income.',
+                                    'source': 'Banks'},
+                                   {'name': 'Investment statements',
+                                    'notes': 'To track dividends, interest, '
+                                             'and capital gains.',
+                                    'source': 'Investment providers'},
+                                   {'name': 'Self Assessment tax returns '
+                                            '(previous years)',
+                                    'notes': 'For reference.',
+                                    'source': "HMRC / Deceased's records"}],
+            'evidence_of_completion': 'HMRC correspondence confirming tax '
+                                      'affairs are settled, submitted tax '
+                                      'returns.',
+            'forms': [{'name': 'P87 (Claim for tax relief for expenses of '
+                               'employment)',
+                       'notes': "If applicable for deceased's final tax year.",
+                       'submission': 'online/post',
+                       'url': 'https://www.gov.uk/government/publications/paye-tax-relief-for-expenses-of-employment-p87'},
+                      {'name': 'SA900 (Trust and Estate Tax Return)',
+                       'notes': 'Required if the estate has income during '
+                                'administration.',
+                       'submission': 'post',
+                       'url': 'https://www.gov.uk/government/publications/trust-and-estate-tax-return-sa900'}],
+            'human_tasks': ['Notify HMRC of the death and provide a final '
+                            'income tax return for the deceased.',
+                            'Calculate any Capital Gains Tax due if assets '
+                            'were sold during administration (e.g., property, '
+                            'shares).',
+                            'Complete and submit estate income tax returns '
+                            '(SA900) if the estate generated income (e.g., '
+                            'rental income, investment income) during '
+                            'administration.',
+                            'Settle any final tax bills or claim refunds.'],
+            'id': 'S012',
+            'order': 12,
+            'prerequisites': ['S009', 'S010', 'S011'],
+            'responsible_party': 'Executor',
+            'risk_notes': 'Failure to correctly report and pay taxes can lead '
+                          'to penalties and interest from HMRC.',
+            'substeps': [{'action_type': ['online', 'post'],
+                          'ai_tasks': [{'inputs_required': ["Deceased's income "
+                                                            '(P60, bank '
+                                                            'statements, etc.)',
+                                                            'Allowances'],
+                                        'name': 'Calculate final income tax '
+                                                'for deceased',
+                                        'outputs': ['Final tax calculation']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can assist in gathering '
+                                               'relevant financial data, '
+                                               'calculating final tax '
+                                               'liability/refund, and guiding '
+                                               'through the appropriate HMRC '
+                                               'forms/processes.',
+                          'description': 'Calculate and submit any outstanding '
+                                         'income tax or capital gains tax for '
+                                         'the deceased up to the date of '
+                                         'death.',
+                          'forms': [],
+                          'human_tasks': ['Collect all income/gain statements',
+                                          'Submit final tax information to '
+                                          'HMRC'],
+                          'id': 'S012-1',
+                          'title': "Complete deceased's final tax return"},
+                         {'action_type': ['online', 'post'],
+                          'ai_tasks': [{'inputs_required': ['Estate income '
+                                                            'records',
+                                                            'Estate expenses'],
+                                        'name': 'Calculate estate income tax',
+                                        'outputs': ['Estate tax liability']}],
+                          'automatable': True,
+                          'automation_reason': 'AI can track estate income and '
+                                               'expenses, calculate tax, and '
+                                               'assist with completing the '
+                                               'SA900 form.',
+                          'description': 'If the estate generates income '
+                                         'during its administration, complete '
+                                         'and submit estate income tax '
+                                         'returns.',
+                          'forms': [{'name': 'SA900',
+                                     'url': 'https://www.gov.uk/government/publications/trust-and-estate-tax-return-sa900'}],
+                          'human_tasks': ['Maintain estate financial records',
+                                          'Complete and submit SA900'],
+                          'id': 'S012-2',
+                          'title': 'Deal with estate income tax (if '
+                                   'applicable)'}],
+            'summary': 'Ensure all income tax and capital gains tax matters '
+                       'for the deceased and the estate are finalised with '
+                       'HMRC.',
+            'title': 'Finalise Tax Affairs for the Deceased and the Estate'}]}
