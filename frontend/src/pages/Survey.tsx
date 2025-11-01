@@ -125,6 +125,9 @@ const Survey = () => {
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [completedAt, setCompletedAt] = useState<string | null>(null);
+
+  const hasCompleted = useMemo(() => Boolean(completedAt), [completedAt]);
 
   const currentQuestion = useMemo(() => questions[currentStep], [currentStep]);
   const progress = useMemo(() => Math.min(((currentStep + 1) / questions.length) * 100, 100), [currentStep]);
@@ -153,6 +156,9 @@ const Survey = () => {
             } else if (parsed?.answers && typeof parsed.answers === "object") {
               answersFromStorage = parsed.answers;
             }
+            if (parsed?.completedAt) {
+              setCompletedAt(parsed.completedAt);
+            }
           } catch {
             localStorage.removeItem(SURVEY_STATE_STORAGE_KEY);
           }
@@ -163,24 +169,17 @@ const Survey = () => {
         let resolvedAnswers = answersFromStorage;
         try {
           const session = await fetchSurveySession(resolvedSessionId);
-          if (session.completed_at && session.survey_data?.answers) {
-            resolvedAnswers = session.survey_data.answers;
-            if (isActive) {
-              setSessionId(resolvedSessionId);
-              setAnswers(resolvedAnswers);
-              setCurrentStep(Math.max(questions.length - 1, 0));
-              setIsLoading(false);
-              navigate("/complete", { replace: true });
-            }
-            return;
+          if (session.completed_at) {
+            setCompletedAt(session.completed_at);
           }
 
           if (session.survey_data?.answers) {
             const remoteAnswers = session.survey_data.answers;
-            if (Object.keys(remoteAnswers).length >= Object.keys(resolvedAnswers).length) {
+            if (Object.keys(remoteAnswers).length >= Object.keys(answersFromStorage).length) {
               resolvedAnswers = remoteAnswers;
             }
           }
+
         } catch (error) {
           console.error("Failed to fetch remote survey state", error);
           toast({
@@ -214,7 +213,7 @@ const Survey = () => {
     return () => {
       isActive = false;
     };
-  }, [navigate, toast]);
+  }, [toast]);
 
   useEffect(() => {
     if (!sessionId) {
@@ -227,13 +226,14 @@ const Survey = () => {
           sessionId,
           answers,
           currentStep,
+          completedAt,
           updatedAt: new Date().toISOString(),
         }),
       );
     } catch (error) {
       console.error("Failed to persist survey state", error);
     }
-  }, [answers, currentStep, sessionId]);
+  }, [answers, completedAt, currentStep, sessionId]);
 
   useEffect(() => {
     if (currentQuestion.type === "multiple") {
@@ -264,20 +264,24 @@ const Survey = () => {
         setIsSubmitting(true);
         await submitSurveyResults(sessionId, payload);
         try {
+          const completionTimestamp = new Date().toISOString();
+          setCompletedAt(completionTimestamp);
           localStorage.setItem(
             SURVEY_STATE_STORAGE_KEY,
             JSON.stringify({
               sessionId,
               answers: answersToSubmit,
               currentStep: Math.max(questions.length - 1, 0),
-              completedAt: new Date().toISOString(),
+              completedAt: completionTimestamp,
             }),
           );
         } catch (error) {
           console.error("Failed to persist completed survey state", error);
         }
-        setIsSubmitting(false);
-        navigate("/complete");
+        toast({
+          title: "All set",
+          description: "We've saved your responses. You can review them below anytime.",
+        });
       } catch (error) {
         console.error("Failed to submit survey results", error);
         toast({
@@ -288,11 +292,11 @@ const Survey = () => {
         setIsSubmitting(false);
       }
     },
-    [answers, navigate, sessionId, toast],
+    [answers, sessionId, toast],
   );
 
   const handleChoiceSelect = useCallback((option: string) => {
-    if (isSubmitting || !sessionId) {
+    if (isSubmitting || !sessionId || hasCompleted) {
       return;
     }
 
@@ -306,7 +310,7 @@ const Survey = () => {
         handleComplete(nextAnswers);
       }
     }, 500);
-  }, [answers, currentQuestion.id, currentStep, handleComplete, isSubmitting, sessionId]);
+  }, [answers, currentQuestion.id, currentStep, handleComplete, hasCompleted, isSubmitting, sessionId]);
 
   const handleMultipleSelect = useCallback((option: string) => {
     setSelectedOptions(prev => 
@@ -315,7 +319,7 @@ const Survey = () => {
   }, []);
 
   const handleMultipleNext = useCallback(() => {
-    if (isSubmitting || !sessionId) {
+    if (isSubmitting || !sessionId || hasCompleted) {
       return;
     }
 
@@ -328,7 +332,7 @@ const Survey = () => {
     } else {
       handleComplete(nextAnswers);
     }
-  }, [answers, currentQuestion.id, currentStep, handleComplete, isSubmitting, selectedOptions, sessionId]);
+  }, [answers, currentQuestion.id, currentStep, handleComplete, hasCompleted, isSubmitting, selectedOptions, sessionId]);
 
   const handleBack = useCallback(() => {
     if (isSubmitting) {
@@ -342,7 +346,7 @@ const Survey = () => {
   }, [currentStep, isSubmitting, navigate]);
 
   const handleSkip = useCallback(() => {
-    if (isSubmitting || !sessionId) {
+    if (isSubmitting || !sessionId || hasCompleted) {
       return;
     }
     if (currentStep < questions.length - 1) {
@@ -350,7 +354,7 @@ const Survey = () => {
     } else {
       handleComplete();
     }
-  }, [currentStep, handleComplete, isSubmitting, sessionId]);
+  }, [currentStep, handleComplete, hasCompleted, isSubmitting, sessionId]);
 
   if (isLoading) {
     return (
@@ -363,6 +367,87 @@ const Survey = () => {
         />
         <div className="relative z-10 flex items-center justify-center min-h-screen">
           <p className="text-lg text-muted-foreground">Loading your survey...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (hasCompleted) {
+    return (
+      <div className="min-h-screen relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-gradient-to-br from-[hsl(210,15%,92%)] to-[hsl(220,15%,85%)]"
+          style={{
+            background: "linear-gradient(135deg, hsl(210, 15%, 92%), hsl(220, 15%, 85%))",
+          }}
+        />
+        <div className="relative z-10 container mx-auto px-4 py-12 flex flex-col items-center justify-center min-h-screen">
+          <div className="w-full max-w-4xl space-y-8">
+            <div className="bg-card rounded-2xl shadow-2xl p-8 md:p-12 border border-border">
+              <h1 className="text-3xl font-semibold text-foreground mb-6">
+                Your responses are saved.
+              </h1>
+              <p className="text-muted-foreground mb-8">
+                Below is everything you shared with us. You can revisit this page anytime—your progress
+                is linked to this browser. If anything changes, we can update it together.
+              </p>
+              <div className="space-y-6">
+                {questions.map(question => {
+                  const answer = answers[question.id];
+                  const hasAnswer = Array.isArray(answer) ? answer.length > 0 : Boolean(answer);
+                  return (
+                    <div key={question.id} className="rounded-xl border border-border bg-background p-6">
+                      <h2 className="text-lg font-medium text-foreground mb-3">
+                        {question.question}
+                      </h2>
+                      {hasAnswer ? (
+                        Array.isArray(answer) ? (
+                          <ul className="list-disc list-inside text-base text-foreground/80 space-y-1">
+                            {answer.map(option => (
+                              <li key={option}>{option}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-base text-foreground/80">{answer}</p>
+                        )
+                      ) : (
+                        <p className="text-base text-muted-foreground italic">
+                          No answer recorded.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-3 justify-center">
+              <button
+                type="button"
+                onClick={() => navigate("/overview")}
+                className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-3 text-base font-semibold text-primary-foreground shadow-lg transition hover:bg-primary/90"
+              >
+                View My Dashboard
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCompletedAt(null);
+                  setCurrentStep(0);
+                  setSelectedOptions([]);
+                }}
+                className="inline-flex items-center justify-center rounded-full border border-border px-8 py-3 text-base font-semibold text-foreground shadow-sm transition hover:bg-background/80"
+              >
+                Update My Answers
+              </button>
+            </div>
+
+            {completedAt && (
+              <p className="text-center text-sm text-muted-foreground">
+                Last updated on {new Date(completedAt).toLocaleString()}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     );
