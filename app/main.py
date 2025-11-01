@@ -6,5 +6,5 @@ from dotenv import load_dotenv
 # Loads environment variables from a .env file
 load_dotenv()
 
-app = Flask(__name__, static_folder="static")
-app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(32)
+ANAM_API_KEY = os.getenv("ANAM_API_KEY")
+
