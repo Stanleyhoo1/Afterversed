@@ -1,5 +1,13 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  createSurveySession,
+  fetchSurveySession,
+  submitSurveyResults,
+  type SurveyPayload,
+} from "@/lib/api";
+import { SESSION_STORAGE_KEY, SURVEY_STATE_STORAGE_KEY } from "@/lib/config";
 
 interface Question {
   id: string;
@@ -99,26 +107,206 @@ const questions: Question[] = [
   }
 ];
 
+const computeStepFromAnswers = (answerMap: Record<string, string | string[]>): number => {
+  for (let i = 0; i < questions.length; i++) {
+    if (!answerMap[questions[i].id]) {
+      return i;
+    }
+  }
+  return questions.length - 1;
+};
+
 const Survey = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [sessionId, setSessionId] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currentQuestion = useMemo(() => questions[currentStep], [currentStep]);
-  const progress = useMemo(() => ((currentStep + 1) / questions.length) * 100, [currentStep]);
+  const progress = useMemo(() => Math.min(((currentStep + 1) / questions.length) * 100, 100), [currentStep]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const bootstrap = async () => {
+      try {
+        let storedSessionId = localStorage.getItem(SESSION_STORAGE_KEY);
+        let resolvedSessionId = storedSessionId ? Number.parseInt(storedSessionId, 10) : NaN;
+
+        if (Number.isNaN(resolvedSessionId)) {
+          const created = await createSurveySession();
+          resolvedSessionId = created.session_id;
+          localStorage.setItem(SESSION_STORAGE_KEY, String(resolvedSessionId));
+        }
+
+        let answersFromStorage: Record<string, string | string[]> = {};
+        const localStateRaw = localStorage.getItem(SURVEY_STATE_STORAGE_KEY);
+        if (localStateRaw) {
+          try {
+            const parsed = JSON.parse(localStateRaw);
+            if (parsed?.sessionId && parsed.sessionId !== resolvedSessionId) {
+              localStorage.removeItem(SURVEY_STATE_STORAGE_KEY);
+            } else if (parsed?.answers && typeof parsed.answers === "object") {
+              answersFromStorage = parsed.answers;
+            }
+          } catch {
+            localStorage.removeItem(SURVEY_STATE_STORAGE_KEY);
+          }
+        }
+        // Remove legacy survey storage key once we migrate to session-based storage.
+        localStorage.removeItem("surveyAnswers");
+
+        let resolvedAnswers = answersFromStorage;
+        try {
+          const session = await fetchSurveySession(resolvedSessionId);
+          if (session.completed_at && session.survey_data?.answers) {
+            resolvedAnswers = session.survey_data.answers;
+            if (isActive) {
+              setSessionId(resolvedSessionId);
+              setAnswers(resolvedAnswers);
+              setCurrentStep(Math.max(questions.length - 1, 0));
+              setIsLoading(false);
+              navigate("/complete", { replace: true });
+            }
+            return;
+          }
+
+          if (session.survey_data?.answers) {
+            const remoteAnswers = session.survey_data.answers;
+            if (Object.keys(remoteAnswers).length >= Object.keys(resolvedAnswers).length) {
+              resolvedAnswers = remoteAnswers;
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch remote survey state", error);
+          toast({
+            title: "Working offline",
+            description: "We'll keep your answers on this device until we can reconnect.",
+          });
+        }
+
+        if (isActive) {
+          setSessionId(resolvedSessionId);
+          setAnswers(resolvedAnswers);
+          setCurrentStep(
+            questions.length > 0 ? computeStepFromAnswers(resolvedAnswers) : 0,
+          );
+        }
+      } catch (error) {
+        console.error("Failed to initialise survey session", error);
+        toast({
+          title: "Unable to start survey",
+          description: "Please refresh the page or try again later.",
+        });
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    bootstrap();
+
+    return () => {
+      isActive = false;
+    };
+  }, [navigate, toast]);
+
+  useEffect(() => {
+    if (!sessionId) {
+      return;
+    }
+    try {
+      localStorage.setItem(
+        SURVEY_STATE_STORAGE_KEY,
+        JSON.stringify({
+          sessionId,
+          answers,
+          currentStep,
+          updatedAt: new Date().toISOString(),
+        }),
+      );
+    } catch (error) {
+      console.error("Failed to persist survey state", error);
+    }
+  }, [answers, currentStep, sessionId]);
+
+  useEffect(() => {
+    if (currentQuestion.type === "multiple") {
+      const existing = answers[currentQuestion.id];
+      setSelectedOptions(Array.isArray(existing) ? existing : []);
+    } else {
+      setSelectedOptions([]);
+    }
+  }, [answers, currentQuestion]);
+
+  const handleComplete = useCallback(
+    async (finalAnswers?: Record<string, string | string[]>) => {
+      if (!sessionId) {
+        toast({
+          title: "Session not ready",
+          description: "Please refresh the page to continue your survey.",
+        });
+        return;
+      }
+
+      const answersToSubmit = finalAnswers ?? answers;
+      const payload: SurveyPayload = {
+        answers: answersToSubmit,
+        timestamp: new Date().toISOString(),
+      };
+
+      try {
+        setIsSubmitting(true);
+        await submitSurveyResults(sessionId, payload);
+        try {
+          localStorage.setItem(
+            SURVEY_STATE_STORAGE_KEY,
+            JSON.stringify({
+              sessionId,
+              answers: answersToSubmit,
+              currentStep: Math.max(questions.length - 1, 0),
+              completedAt: new Date().toISOString(),
+            }),
+          );
+        } catch (error) {
+          console.error("Failed to persist completed survey state", error);
+        }
+        setIsSubmitting(false);
+        navigate("/complete");
+      } catch (error) {
+        console.error("Failed to submit survey results", error);
+        toast({
+          title: "Something went wrong",
+          description: "We couldn't save your survey. Please try again.",
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [answers, navigate, sessionId, toast],
+  );
 
   const handleChoiceSelect = useCallback((option: string) => {
-    setAnswers(prev => ({ ...prev, [currentQuestion.id]: option }));
-    
+    if (isSubmitting || !sessionId) {
+      return;
+    }
+
+    const nextAnswers = { ...answers, [currentQuestion.id]: option };
+    setAnswers(nextAnswers);
+
     setTimeout(() => {
       if (currentStep < questions.length - 1) {
         setCurrentStep(prev => prev + 1);
       } else {
-        handleComplete();
+        handleComplete(nextAnswers);
       }
     }, 500);
-  }, [currentStep, currentQuestion.id]);
+  }, [answers, currentQuestion.id, currentStep, handleComplete, isSubmitting, sessionId]);
 
   const handleMultipleSelect = useCallback((option: string) => {
     setSelectedOptions(prev => 
@@ -127,43 +315,58 @@ const Survey = () => {
   }, []);
 
   const handleMultipleNext = useCallback(() => {
-    setAnswers(prev => ({ ...prev, [currentQuestion.id]: selectedOptions }));
+    if (isSubmitting || !sessionId) {
+      return;
+    }
+
+    const nextAnswers = { ...answers, [currentQuestion.id]: [...selectedOptions] };
+    setAnswers(nextAnswers);
     setSelectedOptions([]);
-    
+
     if (currentStep < questions.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
-      handleComplete();
+      handleComplete(nextAnswers);
     }
-  }, [currentStep, currentQuestion.id, selectedOptions]);
-
-  const handleComplete = useCallback(() => {
-    const surveyData = {
-      answers,
-      timestamp: new Date().toISOString()
-    };
-    
-    console.log("=== SURVEY COMPLETED ===", surveyData);
-    
-    localStorage.setItem('surveyAnswers', JSON.stringify(surveyData));
-    navigate("/complete");
-  }, [answers, navigate]);
+  }, [answers, currentQuestion.id, currentStep, handleComplete, isSubmitting, selectedOptions, sessionId]);
 
   const handleBack = useCallback(() => {
+    if (isSubmitting) {
+      return;
+    }
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
     } else {
       navigate("/");
     }
-  }, [currentStep, navigate]);
+  }, [currentStep, isSubmitting, navigate]);
 
   const handleSkip = useCallback(() => {
+    if (isSubmitting || !sessionId) {
+      return;
+    }
     if (currentStep < questions.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
       handleComplete();
     }
-  }, [currentStep, handleComplete]);
+  }, [currentStep, handleComplete, isSubmitting, sessionId]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-gradient-to-br from-[hsl(210,15%,92%)] to-[hsl(220,15%,85%)]"
+          style={{
+            background: "linear-gradient(135deg, hsl(210, 15%, 92%), hsl(220, 15%, 85%))",
+          }}
+        />
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          <p className="text-lg text-muted-foreground">Loading your survey...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -205,8 +408,10 @@ const Survey = () => {
                 {currentQuestion.options?.map((option) => (
                   <button
                     key={option}
+                    type="button"
                     onClick={() => handleChoiceSelect(option)}
-                    className="w-full text-left px-6 py-4 rounded-xl border-2 border-border bg-background hover:border-primary hover:bg-primary/5 transition-all duration-200 text-base md:text-lg"
+                    disabled={isSubmitting}
+                    className="w-full text-left px-6 py-4 rounded-xl border-2 border-border bg-background hover:border-primary hover:bg-primary/5 transition-all duration-200 text-base md:text-lg disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {option}
                   </button>
@@ -221,23 +426,26 @@ const Survey = () => {
                   {currentQuestion.options?.map((option) => (
                     <label
                       key={option}
-                      className="flex items-center gap-4 px-6 py-4 rounded-xl border-2 border-border bg-background hover:bg-primary/5 transition-all duration-200 cursor-pointer"
+                      className={`flex items-center gap-4 px-6 py-4 rounded-xl border-2 border-border bg-background hover:bg-primary/5 transition-all duration-200 cursor-pointer ${isSubmitting ? "opacity-60 cursor-not-allowed" : ""}`}
                     >
                       <input
                         type="checkbox"
                         checked={selectedOptions.includes(option)}
                         onChange={() => handleMultipleSelect(option)}
-                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                        disabled={isSubmitting}
+                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer disabled:cursor-not-allowed"
                       />
                       <span className="text-base md:text-lg">{option}</span>
                     </label>
                   ))}
                 </div>
                 <button
+                  type="button"
                   onClick={handleMultipleNext}
-                  className="w-full inline-flex items-center justify-center rounded-full bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-lg transition hover:bg-primary/90"
+                  disabled={isSubmitting}
+                  className="w-full inline-flex items-center justify-center rounded-full bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-lg transition hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Continue
+                  {isSubmitting ? "Saving..." : "Continue"}
                 </button>
               </>
             )}
@@ -246,15 +454,19 @@ const Survey = () => {
           {/* Navigation buttons */}
           <div className="flex justify-between items-center mt-6">
             <button
+              type="button"
               onClick={handleBack}
-              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+              disabled={isSubmitting}
+              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium disabled:opacity-60 disabled:pointer-events-none"
             >
               ← Back
             </button>
             {!currentQuestion.required && (
               <button
+                type="button"
                 onClick={handleSkip}
-                className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+                disabled={isSubmitting}
+                className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium disabled:opacity-60 disabled:pointer-events-none"
               >
                 Skip →
               </button>
