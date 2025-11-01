@@ -12,7 +12,7 @@ const Complete = () => {
   }, [navigate]);
 
   const handleViewDashboard = useCallback(() => {
-    navigate("/dashboard");
+    navigate("/overview");
   }, [navigate]);
 
   return (

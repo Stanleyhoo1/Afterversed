@@ -7,6 +7,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Survey from "./pages/Survey";
 import Complete from "./pages/Complete";
+import LoadingDemo from "./pages/LoadingDemo";
+import TaskOverview from "./pages/TaskOverview";
+import Procedure from "./pages/Procedure";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -28,6 +31,9 @@ const App = memo(() => (
           <Route path="/" element={<Index />} />
           <Route path="/survey" element={<Survey />} />
           <Route path="/complete" element={<Complete />} />
+          <Route path="/loading" element={<LoadingDemo />} />
+          <Route path="/overview" element={<TaskOverview />} />
+          <Route path="/procedure" element={<Procedure />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
