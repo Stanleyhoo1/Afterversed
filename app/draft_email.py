@@ -7,12 +7,12 @@ from google import genai
 from google.genai import types
 from pprint import pprint
 
-from .random_data import generate_random_estate_data
-from .send_emails import send_emails
+from random_data import generate_random_estate_data
+from send_emails import send_emails
 
 # --- Setup ---
 load_dotenv()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 # Initialize the client with explicit API key
 gemini_client = genai.Client(api_key=GEMINI_API_KEY)

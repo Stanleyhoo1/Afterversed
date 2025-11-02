@@ -1,12 +1,23 @@
+import json
 import os
+import pathlib
 from typing import Any, Dict, Optional
+
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from database import create_session, get_session, init_db, save_survey_data, update_task_status
+from draft_email import draft_emails
+from random_data import generate_random_estate_data
+from database import (
+    create_session,
+    get_session,
+    init_db,
+    save_survey_data,
+    update_task_status,
+)
 from agents import get_post_death_checklist
 from compute_agent import compute_figures
 from search import search_agent
@@ -55,6 +66,10 @@ class SessionDetailResponse(BaseModel):
     survey_data: Optional[Dict[str, Any]] = None
     completed_at: Optional[str] = None
     created_at: Optional[str] = None
+
+
+class DraftEmailResponse(BaseModel):
+    drafts: list = Field(..., description="List of drafted email templates")
     updated_at: Optional[str] = None
 
 
@@ -101,8 +116,62 @@ async def submit_survey(
     return SessionDetailResponse(**session)
 
 
+@app.get(
+    "/sessions/{session_id}/draft-emails",
+    response_model=DraftEmailResponse,
+    tags=["emails"],
+)
+async def get_draft_emails(session_id: int) -> DraftEmailResponse:
+    """Get drafted emails for a session."""
+    session = await get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Extract survey data from the session
+    survey_data = session.get("survey_data")
+    if not survey_data:
+        raise HTTPException(
+            status_code=400, detail="No survey data found for this session"
+        )
+
+    # Draft the emails using the survey data
+    try:
+        # Structure the data as expected by draft_emails
+        formatted_data = {
+            "steps": [
+                {
+                    "substeps": [
+                        {
+                            "id": "notify_organizations",
+                            "title": "Notify Organizations",
+                            "description": "Draft notification emails for organizations",
+                            "automation_agent_type": "DraftingAgent",
+                            "inputs_required": [
+                                "organization_details",
+                                "deceased_details",
+                            ],
+                        }
+                    ]
+                }
+            ]
+        }
+
+        # Use the answers from survey_data if available, otherwise use the whole survey_data
+        user_data = survey_data.get("answers", survey_data)
+        with open(str(pathlib.Path(__file__).parent / "temp.txt")) as f:
+            drafts = draft_emails(
+                json.load(f),
+                generate_random_estate_data(),
+            )
+        # drafts = draft_emails(formatted_data, user_data)
+        return DraftEmailResponse(drafts=drafts)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 class TaskStatusResponse(BaseModel):
     """Response with all task statuses for a session"""
+
     task_statuses: Dict[str, Any]
     session_id: int
 
@@ -117,14 +186,11 @@ async def get_task_statuses(session_id: int) -> TaskStatusResponse:
     session = await get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    
+
     survey_data = session.get("survey_data", {})
     task_statuses = survey_data.get("task_statuses", {})
-    
-    return TaskStatusResponse(
-        session_id=session_id,
-        task_statuses=task_statuses
-    )
+
+    return TaskStatusResponse(session_id=session_id, task_statuses=task_statuses)
 
 
 class ChecklistGenerateRequest(BaseModel):
@@ -150,13 +216,13 @@ async def generate_checklist_endpoint(
     session = await get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    
+
     if not session.get("survey_data") or not session["survey_data"].get("answers"):
         raise HTTPException(status_code=400, detail="Survey not completed")
-    
+
     # Get survey answers
     answers = session["survey_data"]["answers"]
-    
+
     # Build context from survey answers
     context_parts = []
     if answers.get("date_of_passing"):
@@ -164,31 +230,36 @@ async def generate_checklist_endpoint(
     if answers.get("place_of_death"):
         context_parts.append(f"Location: {answers['place_of_death']}")
     if answers.get("death_certificate"):
-        context_parts.append(f"Death certificate status: {answers['death_certificate']}")
+        context_parts.append(
+            f"Death certificate status: {answers['death_certificate']}"
+        )
     if answers.get("the_will"):
         context_parts.append(f"Will status: {answers['the_will']}")
     if answers.get("todo_list") and isinstance(answers["todo_list"], list):
         context_parts.append(f"Priority areas: {', '.join(answers['todo_list'])}")
-    
+
     additional_context = request.additional_context
     if context_parts:
-        additional_context = "; ".join(context_parts) + (f"; {additional_context}" if additional_context else "")
-    
+        additional_context = "; ".join(context_parts) + (
+            f"; {additional_context}" if additional_context else ""
+        )
+
     # Generate checklist using AI agent
     try:
         checklist = get_post_death_checklist(
             location=request.location,
             relationship=request.relationship,
             jurisdiction_terms="Tell Us Once, MCCD, Green Form, HMCTS Probate, Coroner",
-            additional_context=additional_context
+            additional_context=additional_context,
         )
-        
+
         return ChecklistResponse(
-            checklist=checklist,
-            message="Checklist generated successfully"
+            checklist=checklist, message="Checklist generated successfully"
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate checklist: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate checklist: {str(e)}"
+        )
 
 
 class ComputationRequest(BaseModel):
@@ -213,10 +284,10 @@ async def compute_endpoint(
     session = await get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    
+
     try:
         results = compute_figures(request.task_data, request.user_data)
-        
+
         # Update task statuses in the database
         for result in results:
             task_id = result.get("task_id")
@@ -225,12 +296,11 @@ async def compute_endpoint(
                     session_id=session_id,
                     task_id=task_id,
                     status="completed",
-                    results=result
+                    results=result,
                 )
-        
+
         return ComputationResponse(
-            results=results,
-            message=f"Completed {len(results)} computations"
+            results=results, message=f"Completed {len(results)} computations"
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to compute: {str(e)}")
@@ -238,11 +308,13 @@ async def compute_endpoint(
 
 class FinancialAssessmentRequest(BaseModel):
     """Request to assess if user needs legal/financial assistance"""
+
     pass
 
 
 class FinancialAssessmentResponse(BaseModel):
     """Response indicating what financial tasks need to be done"""
+
     needs_probate_check: bool
     needs_iht_calculation: bool
     needs_estate_valuation: bool
@@ -262,51 +334,65 @@ async def financial_assessment_endpoint(
     session = await get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    
+
     if not session.get("survey_data") or not session["survey_data"].get("answers"):
         raise HTTPException(status_code=400, detail="Survey not completed")
-    
+
     answers = session["survey_data"]["answers"]
-    
+
     # Check if user selected "Handle legal and financial matters"
     todo_list = answers.get("todo_list", [])
-    needs_financial_help = "Handle legal and financial matters" in todo_list if isinstance(todo_list, list) else False
-    
+    needs_financial_help = (
+        "Handle legal and financial matters" in todo_list
+        if isinstance(todo_list, list)
+        else False
+    )
+
     will_status = answers.get("the_will", "")
-    
+
     # Determine what they need
     needs_probate_check = True  # Almost always needed
-    needs_iht_calculation = "don't think" not in will_status.lower()  # If there's a will, likely need IHT calc
+    needs_iht_calculation = (
+        "don't think" not in will_status.lower()
+    )  # If there's a will, likely need IHT calc
     needs_estate_valuation = True  # Always needed for probate decision
-    
+
     next_steps = []
     if needs_estate_valuation:
-        next_steps.append("Gather information about all assets (property, bank accounts, investments)")
+        next_steps.append(
+            "Gather information about all assets (property, bank accounts, investments)"
+        )
     if needs_probate_check:
-        next_steps.append("We'll calculate if probate is required based on estate value")
+        next_steps.append(
+            "We'll calculate if probate is required based on estate value"
+        )
     if needs_iht_calculation:
         next_steps.append("We'll calculate potential Inheritance Tax liability")
-    
-    message = "Based on your responses, we can help automate your financial calculations."
+
+    message = (
+        "Based on your responses, we can help automate your financial calculations."
+    )
     if not needs_financial_help:
         message = "You haven't selected 'Handle legal and financial matters'. If you need help with this, please update your survey."
-    
+
     return FinancialAssessmentResponse(
         needs_probate_check=needs_probate_check,
         needs_iht_calculation=needs_iht_calculation,
         needs_estate_valuation=needs_estate_valuation,
         message=message,
-        next_steps=next_steps
+        next_steps=next_steps,
     )
 
 
 class FuneralSearchRequest(BaseModel):
     """Request to search for funeral homes"""
+
     location: str
 
 
 class FuneralSearchResponse(BaseModel):
     """Response with funeral home search results"""
+
     cremation: Dict[str, Any]
     burial: Dict[str, Any]
     woodland: Dict[str, Any]
@@ -325,28 +411,30 @@ async def search_funeral_endpoint(
     session = await get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    
+
     try:
         # Import the find_funeral function directly
         from search import find_funeral
-        
+
         # Call find_funeral directly with location
         results = find_funeral(request.location)
-        
+
         # Update task status
         await update_task_status(
             session_id=session_id,
             task_id="arrange_funeral_1",
             status="completed",
-            results={"search_location": request.location, "results": results}
+            results={"search_location": request.location, "results": results},
         )
-        
+
         return FuneralSearchResponse(**results)
     except Exception as e:
         import traceback
+
         error_detail = f"Failed to search: {str(e)}\n{traceback.format_exc()}"
         print(error_detail)  # Log to console for debugging
         raise HTTPException(status_code=500, detail=f"Failed to search: {str(e)}")
+<<<<<<< HEAD
 
 
 # ===== LangGraph Multi-Agent Workflow =====
@@ -434,3 +522,5 @@ async def execute_langgraph_workflow(
         print(f"❌ {error_detail}")
         raise HTTPException(status_code=500, detail=f"Workflow failed: {str(e)}")
 
+=======
+>>>>>>> 5ddf4f95d00e7f29a6248c0e9a6d359875b827c2

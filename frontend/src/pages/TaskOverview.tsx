@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { getStoredTaskProgress, STORAGE, subscribeToTaskProgress } from "@/lib/taskProgress";
 
@@ -226,6 +226,13 @@ const TaskOverview = () => {
             </div>
           )}
 
+          {/* Email Templates Link */}
+          <div className="mb-6 text-center">
+            <Link to="/email-templates" className="text-primary hover:text-primary/80 transition-colors font-medium">
+              View Email Templates →
+            </Link>
+          </div>
+
           {/* Main Tasks Grid */}
           <div className="relative mb-16">
             <svg
@@ -325,7 +332,7 @@ const TaskOverview = () => {
                   <feDropShadow dx="0" dy="0" stdDeviation="1.1" floodColor="#4ADE80" floodOpacity="0.75" />
                 </filter>
               </defs>
-              {cloudMarkerIndices.map((vertexIndex) => {
+              {cloudMarkerIndices.map((vertexIndex, i) => {
                 const vertex = polylinePoints[vertexIndex - 1];
                 if (!vertex) {
                   return null;
@@ -357,6 +364,20 @@ const TaskOverview = () => {
                   transformBox: "fill-box",
                 };
 
+                // Make the first small cloud clickable and redirect to /registry
+
+                const handleSmallCloudClick = (e: React.MouseEvent) => {
+                  if (i === 0) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Remove focus ring on click
+                    if (e.currentTarget instanceof HTMLElement) {
+                      e.currentTarget.blur();
+                    }
+                    window.location.href = "/registry";
+                  }
+                };
+
                 return (
                   <g key={`cloud-marker-${vertexIndex}`} transform={`translate(${vertex.x}, ${vertex.y})`}>
                     <g
@@ -372,12 +393,16 @@ const TaskOverview = () => {
                         onMouseEnter={() => handleMarkerEnter(vertexIndex)}
                         onMouseLeave={() => handleMarkerLeave(vertexIndex)}
                         style={{
-                          cursor: "pointer",
+                          cursor: i === 0 ? "pointer" : "default",
                           pointerEvents: "visiblePainted",
                           opacity: isHovered ? 1 : markerBaseOpacity,
-                          transition: isHovered ? "opacity 0s linear" : "opacity 0.12s ease-out"
+                          transition: isHovered ? "opacity 0s linear" : "opacity 0.12s ease-out",
+                          outline: i === 0 ? 'none' : undefined
                         }}
                         filter={markerFilterId}
+                        onClick={handleSmallCloudClick}
+                        tabIndex={i === 0 ? 0 : -1}
+                        aria-label={i === 0 ? "Go to Registry page" : undefined}
                       />
                       <text
                         x={0}
