@@ -1,11 +1,4 @@
 import os
-<<<<<<< HEAD
-import json
-import pathlib
-from dotenv import load_dotenv
-from google import genai
-=======
->>>>>>> 7374a15d328008072eee1f73afb13e605bcebf55
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
