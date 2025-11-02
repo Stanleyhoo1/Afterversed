@@ -222,4 +222,4 @@ if __name__ == "__main__":
             #     },
         )
 
-        # send_emails(data, ["zcabwac@ucl.ac.uk"] * len(data))
+        # send_emails(data, [""] * len(data))

@@ -10,8 +10,11 @@ from strands.models.gemini import GeminiModel
 from string import Template
 
 from playwright.sync_api import (
-    sync_playwright, Page, Browser, BrowserContext,
-    TimeoutError as PWTimeout
+    sync_playwright,
+    Page,
+    Browser,
+    BrowserContext,
+    TimeoutError as PWTimeout,
 )
 
 import re
@@ -27,6 +30,7 @@ model = GeminiModel(
     model_id="gemini-2.5-flash",
     params={"temperature": 0.1},
 )
+
 
 # -------------------------------------------------------------------
 # Shared headful Playwright browser
@@ -46,7 +50,9 @@ class SharedBrowser:
             if cls._browser is None:
                 cls._browser = cls._playwright.chromium.launch(headless=headless)
             if cls._context is None:
-                cls._context = cls._browser.new_context(viewport={"width": 1280, "height": 900})
+                cls._context = cls._browser.new_context(
+                    viewport={"width": 1280, "height": 900}
+                )
             if cls._page is None or cls._page.is_closed():
                 cls._page = cls._context.new_page()
             return cls._page
@@ -67,6 +73,7 @@ class SharedBrowser:
                 cls._browser = None
                 cls._playwright = None
 
+
 # -------------------------------------------------------------------
 # Minimal navigation tools (NO form filling)
 # -------------------------------------------------------------------
@@ -81,7 +88,8 @@ def browser_open(url: str, headless: bool = False, timeout_ms: int = 15000) -> s
         return json.dumps({"ok": True, "url": page.url, "title": page.title()})
     except Exception as e:
         return json.dumps({"ok": False, "error": str(e)})
-    
+
+
 @tool
 def browser_click_role_button(name_regex: str, timeout_ms: int = 15000) -> str:
     """
@@ -92,7 +100,13 @@ def browser_click_role_button(name_regex: str, timeout_ms: int = 15000) -> str:
     try:
         loc = page.get_by_role("button", name=re.compile(name_regex, re.I))
         loc.first.click(timeout=timeout_ms)
-        return json.dumps({"ok": True, "selector": f"role=button name~/{name_regex}/i", "url": page.url})
+        return json.dumps(
+            {
+                "ok": True,
+                "selector": f"role=button name~/{name_regex}/i",
+                "url": page.url,
+            }
+        )
     except Exception as e:
         return json.dumps({"ok": False, "error": str(e)})
 
@@ -104,12 +118,14 @@ def browser_query_links(max_links: int = 100, only_gov_uk: bool = True) -> str:
     If only_gov_uk=True, filters to *.gov.uk domains.
     """
     from urllib.parse import urlparse
+
     page = SharedBrowser.get_page()
     try:
         links = page.eval_on_selector_all(
             "a",
-            "els => els.map(e => ({text:(e.innerText||'').trim(), href:e.href||''}))"
+            "els => els.map(e => ({text:(e.innerText||'').trim(), href:e.href||''}))",
         )
+
         def keep(l):
             if not l["href"] or not l["text"]:
                 return False
@@ -117,10 +133,12 @@ def browser_query_links(max_links: int = 100, only_gov_uk: bool = True) -> str:
                 host = (urlparse(l["href"]).hostname or "").lower()
                 return host.endswith(".gov.uk")
             return True
+
         filtered = [l for l in links if keep(l)]
         return json.dumps({"ok": True, "links": filtered[:max_links]})
     except Exception as e:
         return json.dumps({"ok": False, "error": str(e)})
+
 
 @tool
 def browser_click(selector: str, timeout_ms: int = 15000) -> str:
@@ -135,6 +153,7 @@ def browser_click(selector: str, timeout_ms: int = 15000) -> str:
     except Exception as e:
         return json.dumps({"ok": False, "error": str(e)})
 
+
 @tool
 def browser_click_text(text: str, exact: bool = False, timeout_ms: int = 15000) -> str:
     """
@@ -142,12 +161,13 @@ def browser_click_text(text: str, exact: bool = False, timeout_ms: int = 15000) 
     """
     page = SharedBrowser.get_page()
     try:
-        sel = f'text={"="+text if exact else text}'
+        sel = f"text={'=' + text if exact else text}"
         page.wait_for_selector(sel, timeout=timeout_ms)
         page.click(sel)
         return json.dumps({"ok": True, "selector": sel, "url": page.url})
     except Exception as e:
         return json.dumps({"ok": False, "error": str(e)})
+
 
 @tool
 def browser_wait(selector: str, state: str = "visible", timeout_ms: int = 15000) -> str:
@@ -160,9 +180,12 @@ def browser_wait(selector: str, state: str = "visible", timeout_ms: int = 15000)
         page.wait_for_selector(selector, state=state, timeout=timeout_ms)
         return json.dumps({"ok": True, "selector": selector})
     except PWTimeout:
-        return json.dumps({"ok": False, "error": f"Timeout waiting for {selector} [{state}]"})
+        return json.dumps(
+            {"ok": False, "error": f"Timeout waiting for {selector} [{state}]"}
+        )
     except Exception as e:
         return json.dumps({"ok": False, "error": str(e)})
+
 
 @tool
 def browser_scroll(pixels: int = 800, repeats: int = 1, delay_ms: int = 200) -> str:
@@ -170,20 +193,23 @@ def browser_scroll(pixels: int = 800, repeats: int = 1, delay_ms: int = 200) -> 
     Scroll down by pixels, repeats. Returns: {"ok": true, "scrolls": n}
     """
     import time
+
     page = SharedBrowser.get_page()
     try:
         for _ in range(max(1, repeats)):
             page.evaluate("window.scrollBy(0, arguments[0]);", pixels)
-            time.sleep(delay_ms/1000.0)
+            time.sleep(delay_ms / 1000.0)
         return json.dumps({"ok": True, "scrolls": max(1, repeats)})
     except Exception as e:
         return json.dumps({"ok": False, "error": str(e)})
+
 
 @tool
 def browser_current_url() -> str:
     """Return {"ok": true, "url": "...", "title": "..."}"""
     page = SharedBrowser.get_page()
     return json.dumps({"ok": True, "url": page.url, "title": page.title()})
+
 
 @tool
 def browser_screenshot(path: str = "page.png", full_page: bool = False) -> str:
@@ -194,16 +220,18 @@ def browser_screenshot(path: str = "page.png", full_page: bool = False) -> str:
         return json.dumps({"ok": True, "path": os.path.abspath(path)})
     except Exception as e:
         return json.dumps({"ok": False, "error": str(e)})
-    
-@tool 
+
+
+@tool
 def browser_fill(selector: str, value: str) -> str:
-    """ Fill a text input/textarea identified by CSS/XPath selector. Returns: {"ok": bool, "selector": "...", "value_len": int} """ 
-    page = SharedBrowser.get_page() 
-    try: 
-        page.fill(selector, value) 
-        return json.dumps({"ok": True, "selector": selector, "value_len": len(value)}) 
-    except Exception as e: 
+    """Fill a text input/textarea identified by CSS/XPath selector. Returns: {"ok": bool, "selector": "...", "value_len": int}"""
+    page = SharedBrowser.get_page()
+    try:
+        page.fill(selector, value)
+        return json.dumps({"ok": True, "selector": selector, "value_len": len(value)})
+    except Exception as e:
         return json.dumps({"ok": False, "error": str(e)})
+
 
 @tool
 def browser_click_role_link(name_regex: str, timeout_ms: int = 15000) -> str:
@@ -215,9 +243,12 @@ def browser_click_role_link(name_regex: str, timeout_ms: int = 15000) -> str:
     try:
         loc = page.get_by_role("link", name=re.compile(name_regex, re.I))
         loc.first.click(timeout=timeout_ms)
-        return json.dumps({"ok": True, "selector": f"role=link name~/{name_regex}/i", "url": page.url})
+        return json.dumps(
+            {"ok": True, "selector": f"role=link name~/{name_regex}/i", "url": page.url}
+        )
     except Exception as e:
         return json.dumps({"ok": False, "error": str(e)})
+
 
 @tool
 def browser_click_any_text(texts_pipe: str, timeout_ms: int = 15000) -> str:
@@ -233,10 +264,13 @@ def browser_click_any_text(texts_pipe: str, timeout_ms: int = 15000) -> str:
             sel = f"text={t}"
             page.wait_for_selector(sel, timeout=min(3000, timeout_ms))
             page.click(sel)
-            return json.dumps({"ok": True, "selector": sel, "clicked_text": t, "url": page.url})
+            return json.dumps(
+                {"ok": True, "selector": sel, "clicked_text": t, "url": page.url}
+            )
         except Exception:
             continue
     return json.dumps({"ok": False, "error": f"No clickable text among: {tried}"})
+
 
 @tool
 def browser_has_form_fields(timeout_ms: int = 8000) -> str:
@@ -245,10 +279,13 @@ def browser_has_form_fields(timeout_ms: int = 8000) -> str:
     """
     page = SharedBrowser.get_page()
     try:
-        page.wait_for_selector("input, select, textarea", state="visible", timeout=timeout_ms)
+        page.wait_for_selector(
+            "input, select, textarea", state="visible", timeout=timeout_ms
+        )
         return json.dumps({"ok": True, "has_fields": True})
     except Exception:
         return json.dumps({"ok": True, "has_fields": False})
+
 
 # -------------------------------------------------------------------
 # Task template (use ${} to avoid str.format brace collisions)
@@ -317,6 +354,7 @@ def build_general_task(user_inputs: dict, config: dict) -> str:
         config_json=json.dumps(config, ensure_ascii=False),
     )
 
+
 # -------------------------------------------------------------------
 # Orchestrator
 # -------------------------------------------------------------------
@@ -340,49 +378,70 @@ def register_death(user_inputs: dict):
     config = {
         # Start directly at DuckDuckGo with query param — no typing.
         "seed_url": f"https://duckduckgo.com/?q={duck_query.replace(' ', '+')}",
-        "search": {
-            "entrypoint": "https://duckduckgo.com",
-            "query": duck_query
-        },
+        "search": {"entrypoint": "https://duckduckgo.com", "query": duck_query},
         "links": {
             "allowlist": [".gov.uk"],
             # Avoid City of London unless explicitly requested or postcode maps to EC1-EC4
             "blocklist": (
-                ["cityoflondon.gov.uk"] if not (
-                    (user_inputs.get("postcode","").upper().startswith(("EC1","EC2","EC3","EC4")))
-                ) else []
+                ["cityoflondon.gov.uk"]
+                if not (
+                    user_inputs.get("postcode", "")
+                    .upper()
+                    .startswith(("EC1", "EC2", "EC3", "EC4"))
+                )
+                else []
             ),
             "required_domain_suffixes": [".gov.uk"],
             "prefer_keywords": [
-                "register a death", "book an appointment", "births, deaths and marriages",
-                "register office", "registering a death"
-            ]
+                "register a death",
+                "book an appointment",
+                "births, deaths and marriages",
+                "register office",
+                "registering a death",
+            ],
         },
         "goal": {
-            "keywords": ["register a death", "book an appointment", "registering a death"],
+            "keywords": [
+                "register a death",
+                "book an appointment",
+                "registering a death",
+            ],
             "xpath_or_selectors": [
                 "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'register a death')]",
                 "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'book an appointment')]",
                 "a[href*='register']",
                 "a[href*='death']",
-            ]
+            ],
         },
         "stop": {
             "url_regex_any": [
                 r"/register(-|%20)?death",
                 r"/births(-|%20)?deaths(-|%20)?marriages",
-                r"/book.*appointment"
+                r"/book.*appointment",
             ],
             "selectors_any": ["a[href*='book']", "a[href*='register']"],
-            "phrases_any": ["register a death", "book an appointment", "certificate for burial or cremation"]
-        }
+            "phrases_any": [
+                "register a death",
+                "book an appointment",
+                "certificate for burial or cremation",
+            ],
+        },
     }
 
     tools = [
-        browser_open, browser_query_links, browser_click, browser_click_text,
-        browser_wait, browser_scroll, browser_current_url, browser_screenshot,
-        browser_fill, browser_click_role_button,
-        browser_click_role_link, browser_click_any_text, browser_has_form_fields
+        browser_open,
+        browser_query_links,
+        browser_click,
+        browser_click_text,
+        browser_wait,
+        browser_scroll,
+        browser_current_url,
+        browser_screenshot,
+        browser_fill,
+        browser_click_role_button,
+        browser_click_role_link,
+        browser_click_any_text,
+        browser_has_form_fields,
     ]
     agent = Agent(tools=tools, model=model)
     task = build_general_task(user_inputs, config)
@@ -398,6 +457,7 @@ def register_death(user_inputs: dict):
     text = text.strip()
     data = json.loads(text)
     return data
+
 
 # Finds funeral homes in a location
 @tool
@@ -496,7 +556,7 @@ def search_agent(user_query):
         agent = Agent(
             tools=[find_funeral, register_death],
             model=model,
-            system_prompt=SYS  # if your Agent supports 'system'; otherwise remove
+            system_prompt=SYS,  # if your Agent supports 'system'; otherwise remove
         )
 
         result = agent(user_query)
@@ -516,3 +576,6 @@ def search_agent(user_query):
     except:
         return {"error": "An error occurred during the search process."}
 
+
+if __name__ == "__main__":
+    print(search_agent("Find me the best funeral prices in Stratford"))
