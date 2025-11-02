@@ -25,7 +25,7 @@ const mainTasks: MainTask[] = [
   {
     id: "arrange_funeral",
     title: "Funeral",
-    description: "Take your time with this. There's no rush, and you can arrange something that feels right.",
+    description: "",
     icon: "🕊️",
     estimatedTime: "Several days",
     priority: "important"
@@ -33,7 +33,7 @@ const mainTasks: MainTask[] = [
   {
     id: "legal_financial",
     title: "Legal & Finance",
-    description: "We'll guide you through finding the will, contacting banks, and applying for probate.",
+    description: "",
     icon: "⚖️",
     estimatedTime: "Ongoing",
     priority: "important"
@@ -41,7 +41,7 @@ const mainTasks: MainTask[] = [
   {
     id: "notify_organizations",
     title: "Accounts",
-    description: "Let relevant organizations know about the death to close accounts and stop correspondence.",
+    description: "",
     icon: "📧",
     estimatedTime: "2-3 hours",
     priority: "important"
@@ -49,7 +49,7 @@ const mainTasks: MainTask[] = [
   {
     id: "digital_legacy",
     title: "Digital Legacy",
-    description: "Manage social media accounts, email, and preserve precious digital memories.",
+    description: "",
     icon: "💻",
     estimatedTime: "1-2 hours",
     priority: "when-ready"
@@ -98,7 +98,7 @@ const TaskOverview = () => {
                 const isLeftAligned = index % 2 === 0;
                 const alignmentClass = isLeftAligned ? "items-start" : "items-end";
                 const textAlignment = isLeftAligned ? "text-left" : "text-right";
-                const edgeOffsetClass = isLeftAligned ? "ml-0 sm:ml-3" : "mr-0 sm:mr-3";
+                const edgeOffsetClass = isLeftAligned ? "ml-0 sm:ml-4" : "mr-0 sm:mr-4";
 
                 return (
                   <div
@@ -111,49 +111,30 @@ const TaskOverview = () => {
                     <div className={cn("relative flex flex-col", alignmentClass, edgeOffsetClass)}>
                       <div
                         className={cn(
-                          "w-[14.5rem] sm:w-[15.5rem] md:w-[16.5rem] lg:w-[17rem] aspect-[2400/1411] px-6 py-8 sm:px-8 sm:py-9 flex flex-col justify-between transition-transform duration-300 hover:scale-[1.05] bg-no-repeat bg-center bg-contain",
+                          "w-[21.5rem] sm:w-[23rem] md:w-[24.5rem] lg:w-[26rem] aspect-[2400/1411] px-10 py-12 sm:px-12 sm:py-14 flex items-center justify-center transition-transform duration-300 hover:scale-[1.05] bg-no-repeat bg-center bg-contain",
                           textAlignment,
                         )}
                         style={{
                           backgroundImage: `url(${cloudBackground})`,
                         }}
                       >
-                        <div
-                          className={cn(
-                            "flex items-center gap-4 mb-6",
-                            isLeftAligned ? "justify-start" : "justify-end flex-row-reverse",
-                          )}
-                        >
-                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/20 flex items-center justify-center text-3xl sm:text-4xl text-primary">
+                        <div className="w-full rounded-3xl border border-border/60 bg-background/85 px-6 py-6 sm:px-8 sm:py-8 flex items-center gap-6 shadow-sm">
+                          <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-primary/10 text-4xl sm:text-5xl">
                             {task.icon}
                           </div>
-                          <div className="space-y-2">
-                            <span className="inline-flex items-center justify-center rounded-full bg-secondary/20 px-4 py-1 text-sm font-semibold text-secondary-foreground">
-                              Step {index + 1}
-                            </span>
+                          <div className="flex-1 space-y-4">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                              <span className="inline-flex items-center justify-center rounded-full bg-secondary/20 px-4 py-1 text-sm font-semibold text-secondary-foreground">
+                                Step {index + 1}
+                              </span>
+                              <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                                <span role="img" aria-hidden="true">🕒</span>
+                                <span>{task.estimatedTime}</span>
+                              </span>
+                            </div>
                             <h2 className="text-2xl sm:text-3xl font-semibold text-foreground">
                               {task.title}
                             </h2>
-                          </div>
-                        </div>
-
-                        {task.description && (
-                          <p className="text-base sm:text-lg text-foreground/70 leading-relaxed mb-4">
-                            {task.description}
-                          </p>
-                        )}
-
-                        <div
-                          className={cn(
-                            "flex flex-wrap items-center gap-3",
-                            isLeftAligned ? "justify-start" : "justify-end",
-                          )}
-                        >
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>{task.estimatedTime}</span>
                           </div>
                         </div>
                       </div>
