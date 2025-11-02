@@ -404,7 +404,9 @@ def register_death(user_inputs: dict):
 def find_funeral(location):
     agent = Agent(tools=[], model=model)
     prompt = f"""
-You are a structured data retrieval and summarization agent.
+You are an automated data retrieval agent. CRITICAL: Complete tasks WITHOUT asking questions or user confirmation.
+
+DO NOT ask "Would you like me to proceed?" or similar questions. Work autonomously.
 
 TASK:
 Find the top 3 funeral homes in {location} (East London area preferred).  

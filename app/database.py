@@ -84,6 +84,45 @@ async def save_survey_data(session_id: int, survey_payload: Dict[str, Any]) -> b
         await db.commit()
         return cursor.rowcount > 0
 
+
+async def update_task_status(
+    session_id: int, 
+    task_id: str, 
+    status: Literal["completed", "in_progress", "pending"],
+    results: Optional[Dict[str, Any]] = None
+) -> bool:
+    """Update the status of a specific task in the session.
+    
+    Args:
+        session_id: The session identifier
+        task_id: The task/substep identifier (e.g., "S006-1")
+        status: The new status of the task
+        results: Optional results data from the AI agent
+        
+    Returns:
+        True if the update was successful
+    """
+    # Get current session data
+    session = await get_session(session_id)
+    if not session:
+        return False
+    
+    survey_data = session.get("survey_data", {})
+    
+    # Initialize task_statuses if it doesn't exist
+    if "task_statuses" not in survey_data:
+        survey_data["task_statuses"] = {}
+    
+    # Update the task status
+    survey_data["task_statuses"][task_id] = {
+        "status": status,
+        "updated_at": _utc_now(),
+        "results": results or {}
+    }
+    
+    # Save back to database
+    return await save_survey_data(session_id, survey_data)
+
 async def get_db() -> aiosqlite.Connection:
     """Returns a database connection
 

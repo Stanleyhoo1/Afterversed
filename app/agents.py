@@ -9,8 +9,15 @@ import json
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Initialize the client with explicit API key
-gemini_client = genai.Client(api_key=GEMINI_API_KEY)
+# Initialize the client with explicit API key (optional)
+gemini_client = None
+if GEMINI_API_KEY:
+    try:
+        gemini_client = genai.Client(api_key=GEMINI_API_KEY)
+    except Exception as e:
+        print(f"Warning: Could not initialize Gemini client: {e}")
+else:
+    print("Warning: GEMINI_API_KEY not set. AI features will be disabled.")
 
 # --- Master Prompt Template ---
 # NOTE: All literal braces in the schema are doubled {{ }} so .format(...) does not treat them as placeholders.
@@ -137,6 +144,11 @@ def get_post_death_checklist(location: str,
     Calls Gemini with the master prompt and returns a parsed JSON dict.
     Raises ValueError if the model does not return valid JSON.
     """
+    
+    # Check if Gemini client is available
+    if gemini_client is None:
+        raise ValueError("Gemini API client not initialized. Please set GEMINI_API_KEY in .env file")
+    
     prompt = build_master_prompt(location, relationship, jurisdiction_terms, additional_context)
 
     result = gemini_client.models.generate_content(

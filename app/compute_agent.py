@@ -6,15 +6,21 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from pprint import pprint
-
-from .random_data import generate_random_financial_data
+from random_data import generate_random_financial_data
 
 # --- Setup ---
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Initialize the client with explicit API key
-gemini_client = genai.Client(api_key=GEMINI_API_KEY)
+# Initialize the client with explicit API key (optional)
+gemini_client = None
+if GEMINI_API_KEY:
+    try:
+        gemini_client = genai.Client(api_key=GEMINI_API_KEY)
+    except Exception as e:
+        print(f"Warning: Could not initialize Gemini client: {e}")
+else:
+    print("Warning: GEMINI_API_KEY not set. AI computation features will be disabled.")
 
 
 def format_general_report(result: dict) -> str:
@@ -70,6 +76,11 @@ def compute_figures(data: dict, user_data: dict) -> list:
     Returns:
         list: a list of results
     """
+    
+    # Check if Gemini client is available
+    if gemini_client is None:
+        raise ValueError("Gemini API client not initialized. Please set GEMINI_API_KEY in .env file")
+    
     system_prompt = r"""
 You are a "ComputationAgent," an expert AI accountant specializing in UK estate administration and probate. Your role is to perform complex financial calculations and logical assessments.
 
