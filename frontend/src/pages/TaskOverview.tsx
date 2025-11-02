@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { getStoredTaskProgress, STORAGE, subscribeToTaskProgress } from "@/lib/taskProgress";
 
 const cloudBackground = new URL("../../assets/cloud.png", import.meta.url).href;
-const cloudMarkerSource = new URL("../../assets/cloud-small.svg", import.meta.url).href;
+const cloudMarkerSource = new URL("../../assets/cloud-small.png", import.meta.url).href;
 const gustSegmentSource = new URL("../../assets/gust.png", import.meta.url).href;
 const windSegmentSource = new URL("../../assets/wind.png", import.meta.url).href;
 
@@ -52,6 +52,7 @@ const polylineSegments = polylinePoints.slice(0, -1).map((startPoint, index) => 
 const cloudMarkerIndices = [2, 3, 4, 6, 7, 8, 10, 11, 12, 14, 15 ,16] as const;
 const CLOUD_MARKER_WIDTH = 12;
 const CLOUD_MARKER_HEIGHT = 10.3;
+const MARKER_SEGMENT_INDICES = cloudMarkerIndices.map((vertexIndex) => Math.max(0, vertexIndex - 2));
 
 const cloudMarkerLabels: Record<(typeof cloudMarkerIndices)[number], string> = {
   2: "(i)",
@@ -122,11 +123,28 @@ const mainTasks: MainTask[] = [
   }
 ];
 
+const mainTaskTaskCounts = [4, 4, 4, 4, 4];
+const normalizedTaskCounts = mainTasks.map((_, index) => mainTaskTaskCounts[index] ?? 1);
+const stepTaskStarts: number[] = [];
+let aggregatedTaskCount = 0;
+normalizedTaskCounts.forEach((count, index) => {
+  stepTaskStarts[index] = aggregatedTaskCount;
+  aggregatedTaskCount += count;
+});
+const stepTaskEnds = stepTaskStarts.map((start, index) => start + normalizedTaskCounts[index]);
+const totalTaskCount = aggregatedTaskCount;
+
 const TaskOverview = () => {
   const navigate = useNavigate();
   const [hoveredMarker, setHoveredMarker] = useState<number | null>(null);
   const [completedSegments, setCompletedSegments] = useState<number>(() => getStoredTaskProgress());
-  const clampedCompletedSegments = Math.min(completedSegments, polylineSegments.length);
+  const polylineCompletedSegments = Math.min(completedSegments, polylineSegments.length);
+  const adjustedCompletedSegments = Math.min(polylineSegments.length, polylineCompletedSegments + 1);
+  const taskProgressCount = Math.min(completedSegments, totalTaskCount);
+  const currentMarkerSegmentIndex =
+    MARKER_SEGMENT_INDICES.find((segmentIndex) => segmentIndex >= polylineCompletedSegments) ??
+    MARKER_SEGMENT_INDICES[MARKER_SEGMENT_INDICES.length - 1] ??
+    0;
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -198,14 +216,15 @@ const TaskOverview = () => {
           {/* Main Tasks Grid */}
           <div className="relative mb-16">
             <svg
-              className="absolute inset-0 hidden lg:block z-20"
+              className="absolute inset-0 hidden lg:block z-10"
+              style={{ pointerEvents: "none" }}
               viewBox="0 0 100 220"
               preserveAspectRatio="none"
             >
               <polyline
                 fill="none"
-                stroke="rgba(54, 77, 99, 0.25)"
-                strokeWidth="1.2"
+                stroke="transparent"
+                strokeWidth="0"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeDasharray="2 4"
@@ -213,27 +232,86 @@ const TaskOverview = () => {
                 points={polylinePointsString}
               />
               {polylineSegments.map((segment) => {
-                const isSegmentCompleted = segment.index < clampedCompletedSegments;
-                const segmentIconSize = Math.min(Math.max(segment.length * 0.45, 5.5), 16);
-                const halfWidth = segmentIconSize / 2;
+                const isSegmentCompleted = segment.index < adjustedCompletedSegments;
+                const baseSize = Math.min(Math.max(segment.length * 0.45, 5.5), 16);
+
+                if (isSegmentCompleted) {
+                  const gustSize = Math.max(baseSize * 0.5, 4);
+                  const travelDistance = segment.length;
+                  const animationDuration = Math.max(2.4, travelDistance / 7);
+
+                  return (
+                    <g
+                      key={`polyline-gust-${segment.index}`}
+                      transform={`translate(${segment.start.x} ${segment.start.y}) rotate(${segment.angle})`}
+                      style={{ pointerEvents: "none" }}
+                    >
+                      {[0, 1].map((phase) => (
+                        <image
+                          key={`gust-${segment.index}-${phase}`}
+                          href={gustSegmentSource}
+                          width={gustSize}
+                          height={gustSize}
+                          x={-gustSize}
+                          y={-gustSize / 2}
+                          preserveAspectRatio="xMidYMid meet"
+                        >
+                          <animate
+                            attributeName="x"
+                            values={`-${gustSize};${travelDistance}`}
+                            dur={`${animationDuration}s`}
+                            begin={`${phase * (animationDuration / 2)}s`}
+                            repeatCount="indefinite"
+                          />
+                          <animate
+                            attributeName="opacity"
+                            values="0;0.9;0"
+                            keyTimes="0;0.6;1"
+                            dur={`${animationDuration}s`}
+                            begin={`${phase * (animationDuration / 2)}s`}
+                            repeatCount="indefinite"
+                          />
+                        </image>
+                      ))}
+                    </g>
+                  );
+                }
+
+                const windSize = baseSize * 0.85;
+                const halfWidth = windSize / 2;
                 const centerX = segment.centerX;
                 const centerY = segment.centerY;
 
                 return (
                   <image
-                    key={`polyline-segment-${segment.index}`}
-                    href={isSegmentCompleted ? gustSegmentSource : windSegmentSource}
-                    width={segmentIconSize}
-                    height={segmentIconSize}
+                    key={`polyline-wind-${segment.index}`}
+                    href={windSegmentSource}
+                    width={windSize}
+                    height={windSize}
                     x={centerX - halfWidth}
                     y={centerY - halfWidth}
                     preserveAspectRatio="xMidYMid meet"
                     transform={`rotate(${segment.angle} ${centerX} ${centerY})`}
-                    opacity={isSegmentCompleted ? 0.95 : 0.8}
+                    opacity={0.8}
                     style={{ pointerEvents: "none" }}
                   />
                 );
               })}
+            </svg>
+            <svg
+              className="absolute inset-0 hidden lg:block z-20"
+              viewBox="0 0 100 220"
+              preserveAspectRatio="none"
+            >
+              <defs>
+                <filter id="marker-current-glow" x="-60%" y="-60%" width="220%" height="220%" colorInterpolationFilters="sRGB">
+                  <feDropShadow dx="0" dy="0" stdDeviation="1.2" floodColor="#FACC15" floodOpacity="0.85" />
+                  <feDropShadow dx="0" dy="0" stdDeviation="2.4" floodColor="#FACC15" floodOpacity="0.55" />
+                </filter>
+                <filter id="marker-completed-glow" x="-60%" y="-60%" width="220%" height="220%" colorInterpolationFilters="sRGB">
+                  <feDropShadow dx="0" dy="0" stdDeviation="1.1" floodColor="#4ADE80" floodOpacity="0.75" />
+                </filter>
+              </defs>
               {cloudMarkerIndices.map((vertexIndex) => {
                 const vertex = polylinePoints[vertexIndex - 1];
                 if (!vertex) {
@@ -242,17 +320,28 @@ const TaskOverview = () => {
 
                 const isHovered = hoveredMarker === vertexIndex;
                 const markerSegmentIndex = Math.max(0, vertexIndex - 2);
-                const isMarkerCompleted = markerSegmentIndex < clampedCompletedSegments;
+                const isMarkerCompleted = markerSegmentIndex < currentMarkerSegmentIndex;
+                const isMarkerCurrent = markerSegmentIndex === currentMarkerSegmentIndex;
                 const scale = isHovered ? 1.7 : 1;
                 const scaleTransition = isHovered
                   ? "transform 0.4s ease-out"
                   : "transform 0.12s ease-in";
-                const markerBaseOpacity = isMarkerCompleted ? 0.9 : 0.3;
+                const markerBaseOpacity = isMarkerCurrent ? 1 : isMarkerCompleted ? 0.9 : 0.3;
+                const markerFilter = isMarkerCurrent
+                  ? "drop-shadow(0 0 6px rgba(250, 204, 21, 0.7)) drop-shadow(0 0 14px rgba(250, 204, 21, 0.55))"
+                  : isMarkerCompleted
+                    ? "drop-shadow(0 0 5px rgba(74, 222, 128, 0.6))"
+                    : "none";
+                const markerFilterId = isMarkerCurrent
+                  ? "url(#marker-current-glow)"
+                  : isMarkerCompleted
+                    ? "url(#marker-completed-glow)"
+                    : undefined;
                 const markerStyle: SvgTransformStyle = {
                   transformOrigin: "50% 50%",
                   transform: `scale(${scale})`,
                   transition: scaleTransition,
-                  transformBox: "fill-box"
+                  transformBox: "fill-box",
                 };
 
                 return (
@@ -275,6 +364,7 @@ const TaskOverview = () => {
                           opacity: isHovered ? 1 : markerBaseOpacity,
                           transition: isHovered ? "opacity 0s linear" : "opacity 0.12s ease-out"
                         }}
+                        filter={markerFilterId}
                       />
                       <text
                         x={0}
@@ -299,6 +389,26 @@ const TaskOverview = () => {
                 const alignmentClass = isLeftAligned ? "items-start" : "items-end";
                 const textAlignment = isLeftAligned ? "text-left" : "text-right";
                 const edgeOffsetClass = isLeftAligned ? "ml-0 sm:ml-4" : "mr-0 sm:mr-4";
+                const tasksCompleted = taskProgressCount;
+                const startTaskIndex = stepTaskStarts[index] ?? 0;
+                const endTaskIndex = stepTaskEnds[index] ?? startTaskIndex;
+                const isStepCompleted = index === 0 ? true : tasksCompleted >= endTaskIndex;
+                const hasRemainingTasks = tasksCompleted < totalTaskCount;
+                const isCurrentStep =
+                  index !== 0 &&
+                  !isStepCompleted &&
+                  hasRemainingTasks &&
+                  tasksCompleted >= startTaskIndex &&
+                  tasksCompleted < endTaskIndex;
+                const glowFilter = isStepCompleted
+                  ? "drop-shadow(0 0 6px rgba(74, 222, 128, 0.45)) drop-shadow(0 0 14px rgba(74, 222, 128, 0.55))"
+                  : isCurrentStep
+                    ? "drop-shadow(0 0 6px rgba(250, 204, 21, 0.45)) drop-shadow(0 0 14px rgba(250, 204, 21, 0.55))"
+                    : "drop-shadow(0 0 0 rgba(0, 0, 0, 0))";
+                const cloudImageStyle: CSSProperties = {
+                  filter: glowFilter,
+                  transition: "filter 0.3s ease",
+                };
 
                 return (
                   <div
@@ -311,19 +421,25 @@ const TaskOverview = () => {
                     <div className={cn("relative flex flex-col", alignmentClass, edgeOffsetClass)}>
                       <div
                         className={cn(
-                          "w-[21.5rem] sm:w-[23rem] md:w-[24.5rem] lg:w-[26rem] aspect-[2400/1411] px-10 py-12 sm:px-12 sm:py-14 flex items-center justify-center transition-transform duration-300 hover:scale-[1.05] bg-no-repeat bg-center bg-contain",
+                          "relative w-[21.5rem] sm:w-[23rem] md:w-[24.5rem] lg:w-[26rem] aspect-[2400/1411] transition-transform duration-300 hover:scale-[1.05] overflow-visible",
                           textAlignment,
                         )}
-                        style={{
-                          backgroundImage: `url(${cloudBackground})`,
-                        }}
                       >
-                        <div className="w-full px-6 py-6 sm:px-8 sm:py-8 flex items-center gap-6">
-                          <div className="text-4xl sm:text-5xl" style={{ textShadow: "0 12px 24px rgba(54, 77, 99, 0.25)" }}>
-                            {task.icon}
-                          </div>
-                          <div className="flex-1 flex flex-col items-start gap-4">
-                            <span className="inline-flex items-center justify-center rounded-full bg-secondary/20 px-4 py-1 text-sm font-semibold text-secondary-foreground">
+                        <img
+                          src={cloudBackground}
+                          alt=""
+                          aria-hidden="true"
+                          className="absolute inset-0 h-full w-full object-contain pointer-events-none select-none"
+                          draggable={false}
+                          style={cloudImageStyle}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center px-10 py-12 sm:px-12 sm:py-14">
+                          <div className="relative z-10 w-full px-6 py-6 sm:px-8 sm:py-8 flex items-center gap-6">
+                            <div className="text-4xl sm:text-5xl" style={{ textShadow: "0 12px 24px rgba(54, 77, 99, 0.25)" }}>
+                              {task.icon}
+                            </div>
+                            <div className="flex-1 flex flex-col items-start gap-4">
+                              <span className="inline-flex items-center justify-center rounded-full bg-secondary/20 px-4 py-1 text-sm font-semibold text-secondary-foreground">
                               Step {index + 1}
                             </span>
                             <h2 className="text-3xl sm:text-4xl font-semibold text-foreground leading-tight">
@@ -334,6 +450,7 @@ const TaskOverview = () => {
                               <span>{task.estimatedTime}</span>
                             </span>
                           </div>
+                        </div>
                         </div>
                       </div>
                     </div>
