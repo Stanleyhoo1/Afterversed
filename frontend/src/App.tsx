@@ -13,6 +13,7 @@ import TaskOverview from "./pages/TaskOverview";
 import Procedure from "./pages/Procedure";
 import FinancialProcedure from "./pages/FinancialProcedure";
 import FuneralArrangement from "./pages/FuneralArrangement";
+import LegalFinancialWorkflow from "./pages/LegalFinancialWorkflow";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -40,6 +41,7 @@ const App = memo(() => (
           <Route path="/procedure" element={<Procedure />} />
           <Route path="/financial-procedure" element={<FinancialProcedure />} />
           <Route path="/funeral-arrangement" element={<FuneralArrangement />} />
+          <Route path="/legal-financial-workflow" element={<LegalFinancialWorkflow />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

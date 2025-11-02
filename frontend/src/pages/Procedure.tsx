@@ -1,11 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
-import { getTaskStatuses } from "@/lib/api";
-=======
 import { setStoredTaskProgress } from "@/lib/taskProgress";
 import { fetchSurveySession, getTaskStatuses } from "@/lib/api";
->>>>>>> 7318b931ba9cb3892e809d38b24ec615731c3581
 import { SESSION_STORAGE_KEY } from "@/lib/config";
 
 interface Step {
@@ -344,6 +340,27 @@ const Procedure = () => {
               <p className="text-lg md:text-xl text-foreground leading-relaxed">
                 {currentStep.description}
               </p>
+              
+              {/* AI Agent Button for Legal & Financial Matters */}
+              {currentStep.id === "legal_financial" && !isStepStarted && (
+                <div className="mt-6 bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-lg p-6 shadow-md">
+                  <p className="text-sm text-purple-900 mb-4 leading-relaxed">
+                    <strong>🤖 LangGraph Multi-Agent Workflow Available:</strong> Let our AI agents work together to handle everything automatically:
+                  </p>
+                  <ul className="text-sm text-purple-800 mb-4 space-y-2 ml-4">
+                    <li>• <strong>SearchAgent:</strong> Find banks and government offices</li>
+                    <li>• <strong>DraftingAgent:</strong> Generate all required letters and forms</li>
+                    <li>• <strong>FormAgent:</strong> Submit forms to institutions</li>
+                    <li>• <strong>ComputeAgent:</strong> Validate tax calculations</li>
+                  </ul>
+                  <button
+                    onClick={() => navigate("/legal-financial-workflow")}
+                    className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-4 text-base font-bold text-white shadow-lg transition hover:shadow-xl transform hover:scale-105"
+                  >
+                    🚀 Start Automated Workflow
+                  </button>
+                </div>
+              )}
               
               {/* AI Agent Button for Arrange Funeral */}
               {currentStep.id === "arrange_funeral" && !isStepStarted && (

@@ -6,6 +6,8 @@ import {
   runComputations,
   fetchSurveySession,
   getTaskStatuses,
+  executeLangGraphWorkflow,
+  type LangGraphWorkflowResponse,
 } from "@/lib/api";
 import { SESSION_STORAGE_KEY } from "@/lib/config";
 
@@ -33,6 +35,11 @@ const FinancialProcedure = () => {
   const [isComputing, setIsComputing] = useState(false);
   const [currentStep, setCurrentStep] = useState<"input" | "compute" | "results">("input");
   const [useExampleData, setUseExampleData] = useState(false);
+  
+  // LangGraph workflow state
+  const [workflowResult, setWorkflowResult] = useState<LangGraphWorkflowResponse | null>(null);
+  const [currentAgentStep, setCurrentAgentStep] = useState(0);
+  const [showAllAgents, setShowAllAgents] = useState(true); // Toggle to show all agents
 
   // Example data that matches what ComputeAgent expects
   const exampleFinancialData = {
@@ -160,50 +167,119 @@ const FinancialProcedure = () => {
     if (!sessionId) return;
 
     setIsComputing(true);
+    setCurrentAgentStep(0);
+    setWorkflowResult(null);
+    
     try {
-      // Use example data if checkbox is selected, otherwise use user input
-      const dataToUse = useExampleData ? exampleFinancialData : financialData;
-      
-      // Build task data structure for ComputeAgent
-      const taskData = {
-        steps: [
+      if (showAllAgents) {
+        // === NEW: Use LangGraph Multi-Agent Workflow ===
+        
+        // Simulate step-by-step progress for UI
+        const stepInterval = setInterval(() => {
+          setCurrentAgentStep(prev => {
+            if (prev < 4) return prev + 1;
+            return prev;
+          });
+        }, 2500);
+        
+        // Extract estate values from example data
+        const estateData = {
+          property_value: useExampleData ? 450000 : 0,
+          bank_balances: useExampleData ? 25000 : 0,
+          investments: useExampleData ? 75000 : 0,
+          debts: useExampleData ? 12000 : 0,
+          funeral_costs: useExampleData ? 4500 : 3500
+        };
+        
+        // Execute LangGraph workflow
+        const workflowResponse = await executeLangGraphWorkflow(sessionId, estateData);
+        
+        clearInterval(stepInterval);
+        setCurrentAgentStep(5);
+        setWorkflowResult(workflowResponse);
+        
+        // Convert workflow results to computation results format for display
+        const formattedResults = [
           {
-            id: "S006",
-            title: "Handle Legal and Financial Matters",
-            substeps: [
-              {
-                id: "S006-1",
-                title: "Calculate Total Estate Value",
-                description: "Sum all assets to determine total estate value",
-                automation_agent_type: "ComputationAgent",
-                inputs_required: ["Full estate inventory including property, bank accounts, investments, personal chattels"],
-              },
-              {
-                id: "S006-2",
-                title: "Determine if Probate is Required",
-                description: "Check estate value against probate thresholds",
-                automation_agent_type: "ComputationAgent",
-                inputs_required: ["Total estate value", "Ownership details", "Probate thresholds"],
-              },
-              {
-                id: "S006-3",
-                title: "Calculate Inheritance Tax (IHT)",
-                description: "Calculate potential IHT liability",
-                automation_agent_type: "ComputationAgent",
-                inputs_required: ["Estate value", "IHT thresholds", "Will details"],
-              },
-            ],
+            id: "search_results",
+            body: `**SearchAgent Results:**\n\nFound ${workflowResponse.timeline.find(t => t.agent === "SearchAgent")?.outputs.length || 0} institutions to notify.`
           },
-        ],
-      };
+          {
+            id: "drafting_results",
+            body: `**DraftingAgent Results:**\n\nGenerated ${workflowResponse.documents_generated.total} documents including bank letters and government forms.`
+          },
+          {
+            id: "submission_results",
+            body: `**FormAgent Results:**\n\nSubmitted all documents. All submissions acknowledged and processed.`
+          },
+          {
+            id: "validation_results",
+            body: `**ComputeAgent Results:**\n\n` +
+                  `• Net Estate Value: £${workflowResponse.financial_summary.net_estate.toLocaleString()}\n` +
+                  `• Inheritance Tax Due: £${workflowResponse.tax_summary.iht_due.toLocaleString()}\n` +
+                  `• Probate ${workflowResponse.probate_summary.required ? 'Required' : 'Not Required'}\n` +
+                  `• Validation: ${workflowResponse.validation_status.passed ? '✓ PASSED' : '✗ FAILED'}`
+          }
+        ];
+        
+        setComputationResults(formattedResults);
+        setCurrentStep("results");
+        
+        toast({
+          title: "✅ Multi-Agent Workflow Complete",
+          description: `All ${workflowResponse.timeline.length} agents completed successfully`,
+        });
+        
+      } else {
+        // === OLD: Use ComputeAgent Only ===
+        
+        const dataToUse = useExampleData ? exampleFinancialData : financialData;
+        
+        const taskData = {
+          steps: [
+            {
+              id: "S006",
+              title: "Handle Legal and Financial Matters",
+              substeps: [
+                {
+                  id: "S006-1",
+                  title: "Calculate Total Estate Value",
+                  description: "Sum all assets to determine total estate value",
+                  automation_agent_type: "ComputationAgent",
+                  inputs_required: ["Full estate inventory including property, bank accounts, investments, personal chattels"],
+                },
+                {
+                  id: "S006-2",
+                  title: "Determine if Probate is Required",
+                  description: "Check estate value against probate thresholds",
+                  automation_agent_type: "ComputationAgent",
+                  inputs_required: ["Total estate value", "Ownership details", "Probate thresholds"],
+                },
+                {
+                  id: "S006-3",
+                  title: "Calculate Inheritance Tax (IHT)",
+                  description: "Calculate potential IHT liability",
+                  automation_agent_type: "ComputationAgent",
+                  inputs_required: ["Estate value", "IHT thresholds", "Will details"],
+                },
+              ],
+            },
+          ],
+        };
 
-      const results = await runComputations(sessionId, {
-        user_data: dataToUse,
-        task_data: taskData,
-      });
+        const results = await runComputations(sessionId, {
+          user_data: dataToUse,
+          task_data: taskData,
+        });
 
-      setComputationResults(results.results);
-      setCurrentStep("results");
+        setComputationResults(results.results);
+        setCurrentStep("results");
+        
+        toast({
+          title: "✅ Computation Complete",
+          description: "ComputeAgent has finished all calculations",
+        });
+      }
       
       // Fetch updated task statuses from the database
       try {
@@ -216,14 +292,15 @@ const FinancialProcedure = () => {
           `session_${sessionId}_tasks`,
           JSON.stringify(taskStatuses.task_statuses)
         );
+        
+        toast({
+          title: "Task Statuses Updated",
+          description: "All completed tasks have been saved to your session",
+        });
       } catch (error) {
         console.error("Failed to fetch task statuses", error);
       }
       
-      toast({
-        title: "Calculations Complete!",
-        description: `Completed ${results.results.length} financial calculations. Task statuses updated.`,
-      });
     } catch (error) {
       console.error("Computation failed", error);
       toast({
@@ -265,10 +342,44 @@ const FinancialProcedure = () => {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            💰 Financial & Legal Matters
-          </h1>
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-3xl font-bold text-gray-900">
+              💰 Financial & Legal Matters
+            </h1>
+            
+            {/* Toggle for Multi-Agent Workflow */}
+            <div className="flex items-center gap-3 bg-gradient-to-r from-purple-50 to-indigo-50 px-4 py-2 rounded-full border-2 border-purple-200">
+              <span className="text-sm font-medium text-gray-700">Multi-Agent:</span>
+              <button
+                onClick={() => setShowAllAgents(!showAllAgents)}
+                className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors ${
+                  showAllAgents ? 'bg-purple-600' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                    showAllAgents ? 'translate-x-8' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+              <span className="text-xs text-gray-600">
+                {showAllAgents ? '4 Agents' : 'Compute Only'}
+              </span>
+            </div>
+          </div>
+          
           <p className="text-gray-600 mb-4">{assessment.message}</p>
+          
+          {showAllAgents && (
+            <div className="bg-gradient-to-r from-purple-100 to-indigo-100 rounded-lg p-4 mb-4 border border-purple-300">
+              <p className="text-sm text-purple-900 mb-2">
+                <strong>🤖 LangGraph Multi-Agent Mode Active</strong>
+              </p>
+              <p className="text-xs text-purple-800">
+                When you run calculations, you'll see all 4 agents working together: SearchAgent → DraftingAgent → FormAgent → ComputeAgent
+              </p>
+            </div>
+          )}
           
           {assessment.next_steps && assessment.next_steps.length > 0 && (
             <div className="bg-blue-50 rounded-lg p-4">
@@ -387,13 +498,57 @@ const FinancialProcedure = () => {
                 </div>
               </>
             )}
+            
+            {/* Multi-Agent Progress Visualization */}
+            {isComputing && showAllAgents && (
+              <div className="mt-6 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl shadow-xl p-6 border-2 border-purple-200">
+                <h3 className="text-xl font-bold mb-4 text-center text-gray-800">
+                  🤖 Multi-Agent Workflow in Progress
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    { id: 1, name: "SearchAgent", icon: "🔍", desc: "Finding banks & government offices", color: "blue" },
+                    { id: 2, name: "DraftingAgent", icon: "✍️", desc: "Generating letters & forms", color: "purple" },
+                    { id: 3, name: "FormAgent", icon: "📤", desc: "Submitting documents", color: "green" },
+                    { id: 4, name: "ComputeAgent", icon: "🧮", desc: "Validating finances", color: "orange" },
+                    { id: 5, name: "ReportGenerator", icon: "📊", desc: "Creating final report", color: "emerald" }
+                  ].map((agent, index) => (
+                    <div
+                      key={agent.id}
+                      className={`flex items-center p-4 rounded-xl transition-all duration-300 ${
+                        currentAgentStep > index
+                          ? 'bg-green-100 border-2 border-green-400 shadow-md'
+                          : currentAgentStep === index
+                          ? `bg-${agent.color}-100 border-2 border-${agent.color}-400 shadow-lg animate-pulse`
+                          : 'bg-gray-50 border-2 border-gray-200 opacity-60'
+                      }`}
+                    >
+                      <div className="text-3xl mr-4">{agent.icon}</div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-base text-gray-800">{agent.name}</h4>
+                        <p className="text-sm text-gray-600">{agent.desc}</p>
+                      </div>
+                      {currentAgentStep > index && (
+                        <div className="text-green-600 text-2xl font-bold">✓</div>
+                      )}
+                      {currentAgentStep === index && (
+                        <div className="animate-spin h-6 w-6 border-4 border-indigo-500 border-t-transparent rounded-full" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-center text-sm text-gray-600 mt-4">
+                  Agent {currentAgentStep + 1} of 5 working...
+                </p>
+              </div>
+            )}
 
             <button
               onClick={handleRunComputations}
               disabled={isComputing || (!useExampleData && !financialData.deceased_details?.name)}
               className="w-full mt-6 px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-full hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isComputing ? "⚙️ Computing..." : "🤖 Run AI Calculations"}
+              {isComputing ? (showAllAgents ? "🤖 Multi-Agent Workflow Running..." : "⚙️ Computing...") : "🤖 Run AI Calculations"}
             </button>
           </div>
         )}

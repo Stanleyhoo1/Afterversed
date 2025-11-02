@@ -196,3 +196,84 @@ export async function searchFuneralHomes(
     body: JSON.stringify(data),
   });
 }
+
+// ===== LangGraph Multi-Agent Workflow =====
+
+export interface LangGraphWorkflowRequest {
+  property_value: number;
+  bank_balances: number;
+  investments: number;
+  debts: number;
+  funeral_costs: number;
+}
+
+export interface WorkflowStep {
+  step: number;
+  agent: string;
+  status: string;
+  duration: string;
+  outputs: string[];
+}
+
+export interface LangGraphWorkflowResponse {
+  workflow_id: string;
+  status: string;
+  execution_date: string;
+  executive_summary: {
+    title: string;
+    description: string;
+    key_findings: string[];
+  };
+  timeline: WorkflowStep[];
+  financial_summary: {
+    property_value: number;
+    bank_balances: number;
+    investments: number;
+    gross_estate: number;
+    debts: number;
+    funeral_costs: number;
+    net_estate: number;
+  };
+  tax_summary: {
+    nil_rate_band: number;
+    taxable_estate: number;
+    iht_due: number;
+    iht_rate: number;
+    hmrc_match: boolean;
+  };
+  probate_summary: {
+    required: boolean;
+    threshold: number;
+    reason: string;
+  };
+  next_actions: string[];
+  key_deadlines: Array<{
+    date: string;
+    task: string;
+    priority: string;
+  }>;
+  documents_generated: {
+    bank_letters: number;
+    government_forms: number;
+    total: number;
+  };
+  validation_status: {
+    passed: boolean;
+    discrepancies: any[];
+    timestamp: string;
+  };
+}
+
+export async function executeLangGraphWorkflow(
+  sessionId: number,
+  data: LangGraphWorkflowRequest,
+): Promise<LangGraphWorkflowResponse> {
+  return request<LangGraphWorkflowResponse>(
+    `/sessions/${sessionId}/langgraph-workflow`,
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    }
+  );
+}
+
