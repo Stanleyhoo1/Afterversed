@@ -28,54 +28,38 @@ const questions: Question[] = [
     required: true,
   },
   {
-    id: "overwhelming",
-    question: "This whole process can feel like a fog. What is the one thing that feels most overwhelming to you right now?",
-    type: "choice",
-    options: [
-      "Just knowing where to start",
-      "Arranging the funeral",
-      "Dealing with money and bank accounts",
-      "The legal paperwork (like a Will)",
-      "Telling all the different companies",
-      "All of the above, and I feel stuck",
-      "Something else"
-    ],
-    required: true
-  },
-  {
     id: "todo_list",
     question: "We know the list of people to contact can feel endless. We can help you build a clear, simple checklist.\n\nWhich of these areas are on your mind? (Select any that apply)",
     type: "multiple",
     options: [
-      "Household: (Council Tax, Gas, Electricity, Water)",
-      "Money: (Bank Accounts, Credit Cards, Pensions, Insurance)",
-      "Digital: (Email, Social Media, Subscriptions like Netflix)",
-      "Personal: (Doctor, Dentist, Employer)",
-      "I don't know where to start, and that's okay"
+      "Register the death",
+      "Arrange the funeral",
+      "Handle legal and financial matters",
+      "Notify organizations and services",
+      "Handle digital legacy"
     ],
     required: false
   },
   {
     id: "death_certificate",
-    question: "These are often the first big steps. We can guide you on what to do for each one.\n\n1. The Death Certificate",
+    question: "What's the situation with the Death Certificate?",
     type: "choice",
     options: [
       "We've registered it and have copies.",
       "We've registered it but are waiting for copies.",
       "We haven't been able to do this yet.",
-      "I'm not sure about this."
     ],
     required: true
   },
   {
     id: "the_will",
-    question: "2. The Will",
+    question: "The Will",
     type: "choice",
     options: [
       "We have found the Will and know who the Executor is.",
       "We think there is a Will, but we haven't found it yet.",
       "We don't think there is a Will.",
-      "I'm not sure, and it's stressful to think about."
+      "I'm not sure."
     ],
     required: true
   },
