@@ -1,9 +1,12 @@
-import { useCallback, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { getStoredTaskProgress, STORAGE, subscribeToTaskProgress } from "@/lib/taskProgress";
 
 const cloudBackground = new URL("../../assets/cloud.png", import.meta.url).href;
 const cloudMarkerSource = new URL("../../assets/cloud-small.svg", import.meta.url).href;
+const gustSegmentSource = new URL("../../assets/gust.png", import.meta.url).href;
+const windSegmentSource = new URL("../../assets/wind.png", import.meta.url).href;
 
 const polylinePoints = [
   { x: 20, y: 8 },
@@ -24,6 +27,27 @@ const polylinePoints = [
   { x: 37, y: 120 },
   { x: 14, y: 122 }
 ];
+
+const polylinePointsString = polylinePoints.map((point) => `${point.x},${point.y}`).join(" ");
+const polylineSegments = polylinePoints.slice(0, -1).map((startPoint, index) => {
+  const endPoint = polylinePoints[index + 1];
+  const dx = endPoint.x - startPoint.x;
+  const dy = endPoint.y - startPoint.y;
+  const centerX = (startPoint.x + endPoint.x) / 2;
+  const centerY = (startPoint.y + endPoint.y) / 2;
+  const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+  const length = Math.hypot(dx, dy);
+
+  return {
+    index,
+    start: startPoint,
+    end: endPoint,
+    centerX,
+    centerY,
+    angle,
+    length
+  };
+});
 
 const cloudMarkerIndices = [2, 3, 4, 6, 7, 8, 10, 11, 12, 14, 15 ,16] as const;
 const CLOUD_MARKER_WIDTH = 12;
@@ -101,6 +125,35 @@ const mainTasks: MainTask[] = [
 const TaskOverview = () => {
   const navigate = useNavigate();
   const [hoveredMarker, setHoveredMarker] = useState<number | null>(null);
+  const [completedSegments, setCompletedSegments] = useState<number>(() => getStoredTaskProgress());
+  const clampedCompletedSegments = Math.min(completedSegments, polylineSegments.length);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const syncFromStorage = () => {
+      setCompletedSegments(getStoredTaskProgress());
+    };
+
+    syncFromStorage();
+
+    const unsubscribe = subscribeToTaskProgress(setCompletedSegments);
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === STORAGE.key) {
+        setCompletedSegments(STORAGE.parseCount(event.newValue));
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, []);
 
   const handleMarkerEnter = useCallback((index: number) => {
     setHoveredMarker(index);
@@ -151,13 +204,36 @@ const TaskOverview = () => {
             >
               <polyline
                 fill="none"
-                stroke="rgba(54, 77, 99, 0.35)"
-                strokeWidth="2.25"
+                stroke="rgba(54, 77, 99, 0.25)"
+                strokeWidth="1.2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                strokeDasharray="2 4"
                 pointerEvents="none"
-                points={polylinePoints.map((point) => `${point.x},${point.y}`).join(" ")}
+                points={polylinePointsString}
               />
+              {polylineSegments.map((segment) => {
+                const isSegmentCompleted = segment.index < clampedCompletedSegments;
+                const segmentIconSize = Math.min(Math.max(segment.length * 0.45, 5.5), 16);
+                const halfWidth = segmentIconSize / 2;
+                const centerX = segment.centerX;
+                const centerY = segment.centerY;
+
+                return (
+                  <image
+                    key={`polyline-segment-${segment.index}`}
+                    href={isSegmentCompleted ? gustSegmentSource : windSegmentSource}
+                    width={segmentIconSize}
+                    height={segmentIconSize}
+                    x={centerX - halfWidth}
+                    y={centerY - halfWidth}
+                    preserveAspectRatio="xMidYMid meet"
+                    transform={`rotate(${segment.angle} ${centerX} ${centerY})`}
+                    opacity={isSegmentCompleted ? 0.95 : 0.8}
+                    style={{ pointerEvents: "none" }}
+                  />
+                );
+              })}
               {cloudMarkerIndices.map((vertexIndex) => {
                 const vertex = polylinePoints[vertexIndex - 1];
                 if (!vertex) {
@@ -165,10 +241,13 @@ const TaskOverview = () => {
                 }
 
                 const isHovered = hoveredMarker === vertexIndex;
+                const markerSegmentIndex = Math.max(0, vertexIndex - 2);
+                const isMarkerCompleted = markerSegmentIndex < clampedCompletedSegments;
                 const scale = isHovered ? 1.7 : 1;
                 const scaleTransition = isHovered
                   ? "transform 0.4s ease-out"
                   : "transform 0.12s ease-in";
+                const markerBaseOpacity = isMarkerCompleted ? 0.9 : 0.3;
                 const markerStyle: SvgTransformStyle = {
                   transformOrigin: "50% 50%",
                   transform: `scale(${scale})`,
@@ -193,7 +272,7 @@ const TaskOverview = () => {
                         style={{
                           cursor: "pointer",
                           pointerEvents: "visiblePainted",
-                          opacity: isHovered ? 1 : 0.3,
+                          opacity: isHovered ? 1 : markerBaseOpacity,
                           transition: isHovered ? "opacity 0s linear" : "opacity 0.12s ease-out"
                         }}
                       />

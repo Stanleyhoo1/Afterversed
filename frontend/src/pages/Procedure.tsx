@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { setStoredTaskProgress } from "@/lib/taskProgress";
 
 interface Step {
   id: string;
@@ -174,6 +175,20 @@ const procedureSteps: Step[] = [
   }
 ];
 
+const sequentialTaskOrder = procedureSteps.flatMap(step => step.tasks.map(task => task.id));
+
+const computeSequentialProgress = (completed: Set<string>): number => {
+  let count = 0;
+  for (const taskId of sequentialTaskOrder) {
+    if (completed.has(taskId)) {
+      count += 1;
+    } else {
+      break;
+    }
+  }
+  return count;
+};
+
 const Procedure = () => {
   const navigate = useNavigate();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -195,11 +210,21 @@ const Procedure = () => {
     navigate("/complete");
   }, [navigate]);
 
+  const persistProgress = useCallback((completedSet: Set<string>) => {
+    const sequentialCount = computeSequentialProgress(completedSet);
+    setStoredTaskProgress(sequentialCount);
+  }, []);
+
   const handleCompleteTask = useCallback(() => {
     if (currentTaskIndex === null) return;
 
     const taskId = currentStep.tasks[currentTaskIndex].id;
-    setCompletedTasks(prev => new Set(prev).add(taskId));
+    setCompletedTasks(prev => {
+      const next = new Set(prev);
+      next.add(taskId);
+      persistProgress(next);
+      return next;
+    });
 
     // Move to next task or next step
     if (currentTaskIndex < currentStep.tasks.length - 1) {
@@ -214,7 +239,7 @@ const Procedure = () => {
         navigate("/complete");
       }
     }
-  }, [currentTaskIndex, currentStep, currentStepIndex, navigate]);
+  }, [currentTaskIndex, currentStep, currentStepIndex, navigate, persistProgress]);
 
   const handleSkipTask = useCallback(() => {
     if (currentTaskIndex === null) return;
