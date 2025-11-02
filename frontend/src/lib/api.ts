@@ -143,3 +143,56 @@ export async function getTaskStatuses(
 ): Promise<TaskStatusesResponse> {
   return request<TaskStatusesResponse>(`/sessions/${sessionId}/task-statuses`);
 }
+
+export interface FuneralSearchRequest {
+  location: string;
+}
+
+export interface FuneralSearchResponse {
+  cremation: {
+    price_range: string | null;
+    summary: Array<{
+      name: string;
+      price: string | null;
+      rating: number | null;
+      location: string;
+      link: string;
+    }>;
+  };
+  burial: {
+    price_range: string | null;
+    summary: Array<{
+      name: string;
+      price: string | null;
+      rating: number | null;
+      location: string;
+      link: string;
+    }>;
+  };
+  woodland: {
+    price_range: string | null;
+    summary: Array<{
+      name: string;
+      price: string | null;
+      rating: number | null;
+      location: string;
+      link: string;
+    }>;
+  };
+  metadata: {
+    query_location: string;
+    search_timestamp: string;
+    currency: string | null;
+    notes: string | null;
+  };
+}
+
+export async function searchFuneralHomes(
+  sessionId: number,
+  data: FuneralSearchRequest,
+): Promise<FuneralSearchResponse> {
+  return request<FuneralSearchResponse>(`/sessions/${sessionId}/search-funeral`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}

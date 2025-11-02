@@ -617,7 +617,7 @@ const Survey = () => {
               {needsFinancialHelp && (
                 <button
                   type="button"
-                  onClick={() => navigate("/procedure")}
+                  onClick={() => navigate("/financial-procedure")}
                   className="inline-flex items-center justify-center rounded-full bg-blue-600 px-8 py-3 text-base font-semibold text-white shadow-lg transition hover:bg-blue-700"
                 >
                   💰 Start Financial Calculations

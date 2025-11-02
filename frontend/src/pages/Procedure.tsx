@@ -1,8 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchSurveySession, getTaskStatuses } from "@/lib/api";
+import { getTaskStatuses } from "@/lib/api";
 import { SESSION_STORAGE_KEY } from "@/lib/config";
-import FinancialProcedure from "./FinancialProcedure";
 
 interface Step {
   id: string;
@@ -183,7 +182,6 @@ const Procedure = () => {
   const [currentTaskIndex, setCurrentTaskIndex] = useState<number | null>(null);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [startedSteps, setStartedSteps] = useState<Set<string>>(new Set());
-  const [showFinancialProcedure, setShowFinancialProcedure] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
 
   // These useMemo hooks must be called before any conditional returns (Rules of Hooks)
@@ -191,21 +189,13 @@ const Procedure = () => {
   const isStepStarted = useMemo(() => startedSteps.has(currentStep.id), [startedSteps, currentStep.id]);
   const progress = useMemo(() => ((currentStepIndex + 1) / procedureSteps.length) * 100, [currentStepIndex]);
 
-  // Check if user needs financial help and load completed tasks from AI agents
+  // Load completed tasks from AI agents
   useEffect(() => {
     const checkSession = async () => {
       const storedSessionId = localStorage.getItem(SESSION_STORAGE_KEY);
       if (storedSessionId) {
         try {
           const sessionIdNum = Number.parseInt(storedSessionId, 10);
-          const session = await fetchSurveySession(sessionIdNum);
-          
-          if (session.survey_data?.answers) {
-            const todoList = session.survey_data.answers.todo_list;
-            if (Array.isArray(todoList) && todoList.includes("Handle legal and financial matters")) {
-              setShowFinancialProcedure(true);
-            }
-          }
           
           // Load task statuses completed by AI agents
           try {
@@ -230,17 +220,13 @@ const Procedure = () => {
     checkSession();
   }, []);
 
-  // If user needs financial help, show the FinancialProcedure component
+  // If still checking session, show loading
   if (isCheckingSession) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-lg text-gray-600">Loading...</p>
       </div>
     );
-  }
-
-  if (showFinancialProcedure) {
-    return <FinancialProcedure />;
   }
 
   const handleStartStep = useCallback(() => {
@@ -329,6 +315,21 @@ const Procedure = () => {
               <p className="text-lg md:text-xl text-foreground leading-relaxed">
                 {currentStep.description}
               </p>
+              
+              {/* AI Agent Button for Arrange Funeral */}
+              {currentStep.id === "arrange_funeral" && !isStepStarted && (
+                <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-800 mb-3">
+                    <strong>🤖 AI Assistant Available:</strong> Use our AI-powered search to find and compare funeral homes in your area.
+                  </p>
+                  <button
+                    onClick={() => navigate("/funeral-arrangement")}
+                    className="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-blue-700"
+                  >
+                    🔍 Search Funeral Homes with AI
+                  </button>
+                </div>
+              )}
               
               {!isStepStarted && (
                 <div className="mt-8 flex flex-col sm:flex-row gap-4">
