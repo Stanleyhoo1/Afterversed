@@ -19,9 +19,9 @@ const Complete = () => {
     <div className="min-h-screen relative overflow-hidden">
       {/* Background */}
       <div 
-        className="absolute inset-0 bg-gradient-to-br from-[hsl(210,15%,92%)] to-[hsl(220,15%,85%)]"
+        className="absolute inset-0"
         style={{
-          background: 'linear-gradient(135deg, hsl(210, 15%, 92%), hsl(220, 15%, 85%))',
+          background: 'var(--gradient-bg)',
         }}
       />
 

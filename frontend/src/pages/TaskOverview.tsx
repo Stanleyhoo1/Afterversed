@@ -1,5 +1,8 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
+
+const cloudBackground = new URL("../../assets/cloud.png", import.meta.url).href;
 
 interface MainTask {
   id: string;
@@ -13,15 +16,15 @@ interface MainTask {
 const mainTasks: MainTask[] = [
   {
     id: "register_death",
-    title: "Register the Death",
-    description: "This is one of the first essential steps. You'll need to register the death within 5 days.",
+    title: "Registry",
+    description: "",
     icon: "📋",
     estimatedTime: "1-2 hours",
     priority: "urgent"
   },
   {
     id: "arrange_funeral",
-    title: "Arrange the Funeral",
+    title: "Funeral",
     description: "Take your time with this. There's no rush, and you can arrange something that feels right.",
     icon: "🕊️",
     estimatedTime: "Several days",
@@ -29,7 +32,7 @@ const mainTasks: MainTask[] = [
   },
   {
     id: "legal_financial",
-    title: "Handle Legal and Financial Matters",
+    title: "Legal & Finance",
     description: "We'll guide you through finding the will, contacting banks, and applying for probate.",
     icon: "⚖️",
     estimatedTime: "Ongoing",
@@ -37,7 +40,7 @@ const mainTasks: MainTask[] = [
   },
   {
     id: "notify_organizations",
-    title: "Notify Organizations and Services",
+    title: "Accounts",
     description: "Let relevant organizations know about the death to close accounts and stop correspondence.",
     icon: "📧",
     estimatedTime: "2-3 hours",
@@ -45,7 +48,7 @@ const mainTasks: MainTask[] = [
   },
   {
     id: "digital_legacy",
-    title: "Handle Digital Legacy",
+    title: "Digital Legacy",
     description: "Manage social media accounts, email, and preserve precious digital memories.",
     icon: "💻",
     estimatedTime: "1-2 hours",
@@ -64,45 +67,19 @@ const TaskOverview = () => {
     navigate("/complete");
   }, [navigate]);
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "urgent":
-        return "bg-red-50 border-red-200 text-red-700";
-      case "important":
-        return "bg-amber-50 border-amber-200 text-amber-700";
-      case "when-ready":
-        return "bg-blue-50 border-blue-200 text-blue-700";
-      default:
-        return "bg-gray-50 border-gray-200 text-gray-700";
-    }
-  };
-
-  const getPriorityLabel = (priority: string) => {
-    switch (priority) {
-      case "urgent":
-        return "Time Sensitive";
-      case "important":
-        return "Important";
-      case "when-ready":
-        return "When You're Ready";
-      default:
-        return "";
-    }
-  };
-
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background */}
       <div 
-        className="absolute inset-0 bg-gradient-to-br from-[hsl(210,15%,92%)] to-[hsl(220,15%,85%)]"
+        className="absolute inset-0"
         style={{
-          background: 'linear-gradient(135deg, hsl(210, 15%, 92%), hsl(220, 15%, 85%))',
+          background: 'var(--gradient-bg)',
         }}
       />
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 py-12">
-        <div className="w-full max-w-5xl mx-auto">
+      <div className="relative z-10 w-full px-4 sm:px-8 md:px-10 lg:px-12 py-12">
+        <div className="w-full">
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-3xl md:text-4xl font-semibold text-foreground mb-4">
@@ -115,50 +92,76 @@ const TaskOverview = () => {
           </div>
 
           {/* Main Tasks Grid */}
-          <div className="space-y-6 mb-12">
-            {mainTasks.map((task, index) => (
-              <div
-                key={task.id}
-                className="bg-card rounded-2xl shadow-lg border border-border overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
-              >
-                <div className="p-6 md:p-8">
-                  <div className="flex items-start gap-6">
-                    {/* Task Number & Icon */}
-                    <div className="flex-shrink-0">
-                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-primary/10 flex items-center justify-center text-3xl md:text-4xl">
-                        {task.icon}
-                      </div>
-                      <div className="text-center mt-2 text-sm font-semibold text-muted-foreground">
-                        Step {index + 1}
-                      </div>
-                    </div>
+          <div className="relative mb-16">
+            <div className="flex flex-col gap-24 md:gap-36 min-h-[220vh]">
+              {mainTasks.map((task, index) => {
+                const isLeftAligned = index % 2 === 0;
+                const alignmentClass = isLeftAligned ? "items-start" : "items-end";
+                const textAlignment = isLeftAligned ? "text-left" : "text-right";
+                const edgeOffsetClass = isLeftAligned ? "ml-0 sm:ml-3" : "mr-0 sm:mr-3";
 
-                    {/* Task Content */}
-                    <div className="flex-1">
-                      <div className="flex flex-wrap items-start justify-between gap-4 mb-3">
-                        <h2 className="text-xl md:text-2xl font-semibold text-foreground">
-                          {task.title}
-                        </h2>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getPriorityColor(task.priority)}`}>
-                          {getPriorityLabel(task.priority)}
-                        </span>
-                      </div>
-                      
-                      <p className="text-base md:text-lg text-foreground/70 leading-relaxed mb-3">
-                        {task.description}
-                      </p>
-                      
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>Estimated time: {task.estimatedTime}</span>
+                return (
+                  <div
+                    key={task.id}
+                    className={cn(
+                      "flex w-full",
+                      isLeftAligned ? "justify-start" : "justify-end",
+                    )}
+                  >
+                    <div className={cn("relative flex flex-col", alignmentClass, edgeOffsetClass)}>
+                      <div
+                        className={cn(
+                          "w-[14.5rem] sm:w-[15.5rem] md:w-[16.5rem] lg:w-[17rem] aspect-[2400/1411] px-6 py-8 sm:px-8 sm:py-9 flex flex-col justify-between transition-transform duration-300 hover:scale-[1.05] bg-no-repeat bg-center bg-contain",
+                          textAlignment,
+                        )}
+                        style={{
+                          backgroundImage: `url(${cloudBackground})`,
+                        }}
+                      >
+                        <div
+                          className={cn(
+                            "flex items-center gap-4 mb-6",
+                            isLeftAligned ? "justify-start" : "justify-end flex-row-reverse",
+                          )}
+                        >
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/20 flex items-center justify-center text-3xl sm:text-4xl text-primary">
+                            {task.icon}
+                          </div>
+                          <div className="space-y-2">
+                            <span className="inline-flex items-center justify-center rounded-full bg-secondary/20 px-4 py-1 text-sm font-semibold text-secondary-foreground">
+                              Step {index + 1}
+                            </span>
+                            <h2 className="text-2xl sm:text-3xl font-semibold text-foreground">
+                              {task.title}
+                            </h2>
+                          </div>
+                        </div>
+
+                        {task.description && (
+                          <p className="text-base sm:text-lg text-foreground/70 leading-relaxed mb-4">
+                            {task.description}
+                          </p>
+                        )}
+
+                        <div
+                          className={cn(
+                            "flex flex-wrap items-center gap-3",
+                            isLeftAligned ? "justify-start" : "justify-end",
+                          )}
+                        >
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>{task.estimatedTime}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                );
+              })}
+            </div>
           </div>
 
           {/* Information Box */}

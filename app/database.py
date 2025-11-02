@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import aiosqlite
-
+import bcrypt
 
 DB_PATH = Path(__file__).with_name("database.db")
 
