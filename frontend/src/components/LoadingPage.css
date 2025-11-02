@@ -1,0 +1,277 @@
+/* Loading Page - Crystal Box Wireframe Animation */
+
+.loading-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+/* Dynamic animated background */
+.loading-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    #667eea 0%,
+    #764ba2 25%,
+    #f093fb 50%,
+    #4facfe 75%,
+    #00f2fe 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 3D Scene Container */
+.scene {
+  width: 300px;
+  height: 300px;
+  perspective: 1000px;
+  perspective-origin: 50% 50%;
+  margin-bottom: 60px;
+  z-index: 2;
+}
+
+/* 3D Crystal Box - Perfect Cube */
+.crystal-box {
+  width: 300px;
+  height: 300px;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: rotateCrystalBox 10s infinite linear;
+}
+
+@keyframes rotateCrystalBox {
+  0% {
+    transform: rotateX(-30deg) rotateY(0deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(-30deg) rotateY(360deg) rotateZ(0deg);
+  }
+}
+
+/* Box Faces - Wireframe only with borders - All Equal Size */
+.box-face {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  background: transparent;
+  box-shadow: 
+    0 0 25px rgba(255, 255, 255, 0.4),
+    inset 0 0 25px rgba(255, 255, 255, 0.15);
+}
+
+/* Front and Back faces */
+.box-face.front {
+  transform: translateZ(150px);
+}
+
+.box-face.back {
+  transform: translateZ(-150px) rotateY(180deg);
+}
+
+/* Left and Right faces */
+.box-face.right {
+  transform: rotateY(90deg) translateZ(150px);
+}
+
+.box-face.left {
+  transform: rotateY(-90deg) translateZ(150px);
+}
+
+/* Top and Bottom faces */
+.box-face.top {
+  transform: rotateX(90deg) translateZ(150px);
+}
+
+.box-face.bottom {
+  transform: rotateX(-90deg) translateZ(150px);
+}
+
+/* Add corner accents for crystal effect */
+.box-face::before,
+.box-face::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
+.box-face::before {
+  top: -2px;
+  left: -2px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.box-face::after {
+  top: -2px;
+  right: -2px;
+  border-left: none;
+  border-bottom: none;
+}
+
+/* Loading Text Container */
+.loading-text-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  z-index: 2;
+}
+
+/* Loading Title */
+.loading-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  margin: 0;
+  text-shadow: 
+    0 0 10px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(102, 126, 234, 0.6),
+    0 0 30px rgba(118, 75, 162, 0.4);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* Loading Dots */
+.loading-dots {
+  display: flex;
+  gap: 12px;
+}
+
+.dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 
+    0 0 10px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(102, 126, 234, 0.6);
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .scene {
+    width: 220px;
+    height: 220px;
+  }
+
+  .box-face {
+    width: 220px;
+    height: 220px;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+  }
+
+  .box-face.front {
+    transform: translateZ(110px);
+  }
+
+  .box-face.back {
+    transform: translateZ(-110px) rotateY(180deg);
+  }
+
+  .box-face.right {
+    transform: rotateY(90deg) translateZ(110px);
+  }
+
+  .box-face.left {
+    transform: rotateY(-90deg) translateZ(110px);
+  }
+
+  .box-face.top {
+    transform: rotateX(90deg) translateZ(110px);
+  }
+
+  .box-face.bottom {
+    transform: rotateX(-90deg) translateZ(110px);
+  }
+
+  .loading-title {
+    font-size: 2rem;
+  }
+}
+
+/* Performance optimization */
+.crystal-box,
+.box-face,
+.loading-title,
+.dot {
+  will-change: transform, opacity;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .crystal-box {
+    animation-duration: 12s;
+  }
+  
+  .loading-title,
+  .dot {
+    animation: none;
+  }
+  
+  .loading-background {
+    animation-duration: 16s;
+  }
+}

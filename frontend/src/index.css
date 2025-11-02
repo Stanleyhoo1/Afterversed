@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 210 15% 92%;
+    --foreground: 220 15% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 20%;
+
+    --primary: 45 95% 55%;
+    --primary-foreground: 220 15% 20%;
+
+    --secondary: 210 20% 85%;
+    --secondary-foreground: 220 15% 20%;
+
+    --muted: 210 20% 88%;
+    --muted-foreground: 220 10% 50%;
+
+    --accent: 45 95% 65%;
+    --accent-foreground: 220 15% 20%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 15% 80%;
+    --input: 210 15% 85%;
+    --ring: 45 95% 55%;
+
+    --radius: 0.75rem;
+    
+    --gradient-bg: linear-gradient(135deg, hsl(210, 15%, 92%), hsl(220, 15%, 85%));
+    --gradient-sun: radial-gradient(circle at top right, hsl(45, 95%, 60%) 0%, transparent 50%);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 220 20% 15%;
+    --foreground: 210 15% 95%;
+
+    --card: 220 20% 18%;
+    --card-foreground: 210 15% 95%;
+
+    --popover: 220 20% 18%;
+    --popover-foreground: 210 15% 95%;
+
+    --primary: 45 95% 55%;
+    --primary-foreground: 220 15% 20%;
+
+    --secondary: 220 15% 25%;
+    --secondary-foreground: 210 15% 95%;
+
+    --muted: 220 15% 25%;
+    --muted-foreground: 210 10% 65%;
+
+    --accent: 45 95% 65%;
+    --accent-foreground: 220 15% 20%;
+
+    --destructive: 0 62.8% 50.6%;
+    --destructive-foreground: 210 15% 95%;
+
+    --border: 220 15% 30%;
+    --input: 220 15% 30%;
+    --ring: 45 95% 55%;
+    
+    --gradient-bg: linear-gradient(135deg, hsl(220, 20%, 15%), hsl(225, 20%, 10%));
+    --gradient-sun: radial-gradient(circle at top right, hsl(45, 95%, 50%) 0%, transparent 50%);
+    
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
