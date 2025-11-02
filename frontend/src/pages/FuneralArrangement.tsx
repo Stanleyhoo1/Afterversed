@@ -142,28 +142,28 @@ const FuneralArrangement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+  <div className="min-h-screen py-12 px-4" style={{ background: 'linear-gradient(135deg, #F0F4F8 0%, #E0E7EF 100%)' }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">
+          <h1 className="text-4xl font-bold mb-3" style={{ color: '#364d63' }}>
             Arrange Funeral Services
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg" style={{ color: '#5c6e85' }}>
             Find and compare funeral homes in your area
           </p>
         </div>
 
         {/* Search Section */}
         {!results && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+          <div className="rounded-2xl shadow-xl p-8 mb-8" style={{ background: 'rgba(255,255,255,0.95)', border: '1px solid #e0e7ef' }}>
+            <h2 className="text-2xl font-semibold mb-6" style={{ color: '#364d63' }}>
               Search for Funeral Homes
             </h2>
             
             <div className="space-y-4">
               <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="location" className="block text-sm font-medium mb-2" style={{ color: '#364d63' }}>
                   Location (City or Area)
                 </label>
                 <input
@@ -172,7 +172,8 @@ const FuneralArrangement = () => {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="e.g., Stratford, London"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                  style={{ borderColor: '#c3d0e0', color: '#364d63', background: '#f0f4f8' }}
                   onKeyPress={(e) => {
                     if (e.key === "Enter" && !isSearching) {
                       handleSearch();
@@ -184,14 +185,15 @@ const FuneralArrangement = () => {
               <button
                 onClick={handleSearch}
                 disabled={isSearching || !location.trim()}
-                className="w-full px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-full hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-8 py-4 text-white text-lg font-semibold rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: '#364d63' }}
               >
                 {isSearching ? "🔍 Searching..." : "🔍 Search Funeral Homes"}
               </button>
             </div>
 
-            <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-800">
+            <div className="mt-6 rounded-lg p-4" style={{ background: '#e0e7ef', border: '1px solid #c3d0e0' }}>
+              <p className="text-sm" style={{ color: '#364d63' }}>
                 <strong>ℹ️ What we'll find:</strong> We'll search for the top funeral homes in your area
                 and provide options for cremation, burial, and woodland/natural burial services, including
                 pricing and ratings where available.
@@ -204,18 +206,19 @@ const FuneralArrangement = () => {
         {results && (
           <div className="space-y-6">
             {/* Type Selection */}
-            <div className="bg-white rounded-2xl shadow-xl p-6">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <div className="rounded-2xl shadow-xl p-6" style={{ background: 'rgba(255,255,255,0.95)', border: '1px solid #e0e7ef' }}>
+              <h2 className="text-2xl font-semibold mb-4" style={{ color: '#364d63' }}>
                 Select Service Type
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button
                   onClick={() => setSelectedType("cremation")}
-                  className={`p-6 rounded-xl border-2 transition ${
-                    selectedType === "cremation"
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-blue-300"
-                  }`}
+                  className={`p-6 rounded-xl border-2 transition ${selectedType === "cremation" ? '' : ''}`}
+                  style={{
+                    borderColor: selectedType === "cremation" ? '#364d63' : '#e0e7ef',
+                    background: selectedType === "cremation" ? '#f0f4f8' : '#fff',
+                    color: '#364d63',
+                  }}
                 >
                   <div className="text-4xl mb-2">🔥</div>
                   <h3 className="text-lg font-semibold mb-1">Cremation</h3>
@@ -226,11 +229,12 @@ const FuneralArrangement = () => {
 
                 <button
                   onClick={() => setSelectedType("burial")}
-                  className={`p-6 rounded-xl border-2 transition ${
-                    selectedType === "burial"
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-blue-300"
-                  }`}
+                  className={`p-6 rounded-xl border-2 transition ${selectedType === "burial" ? '' : ''}`}
+                  style={{
+                    borderColor: selectedType === "burial" ? '#364d63' : '#e0e7ef',
+                    background: selectedType === "burial" ? '#f0f4f8' : '#fff',
+                    color: '#364d63',
+                  }}
                 >
                   <div className="text-4xl mb-2">⛪</div>
                   <h3 className="text-lg font-semibold mb-1">Burial</h3>
@@ -241,11 +245,12 @@ const FuneralArrangement = () => {
 
                 <button
                   onClick={() => setSelectedType("woodland")}
-                  className={`p-6 rounded-xl border-2 transition ${
-                    selectedType === "woodland"
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-blue-300"
-                  }`}
+                  className={`p-6 rounded-xl border-2 transition ${selectedType === "woodland" ? '' : ''}`}
+                  style={{
+                    borderColor: selectedType === "woodland" ? '#364d63' : '#e0e7ef',
+                    background: selectedType === "woodland" ? '#f0f4f8' : '#fff',
+                    color: '#364d63',
+                  }}
                 >
                   <div className="text-4xl mb-2">🌲</div>
                   <h3 className="text-lg font-semibold mb-1">Woodland/Natural</h3>
@@ -258,9 +263,9 @@ const FuneralArrangement = () => {
 
             {/* Selected Type Results */}
             {selectedType && (
-              <div className="bg-white rounded-2xl shadow-xl p-8">
+              <div className="rounded-2xl shadow-xl p-8" style={{ background: 'rgba(255,255,255,0.97)', border: '1px solid #e0e7ef' }}>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-semibold text-gray-900">
+                  <h2 className="text-2xl font-semibold" style={{ color: '#364d63' }}>
                     {selectedType.charAt(0).toUpperCase() + selectedType.slice(1)} Options
                   </h2>
                   <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold">
@@ -280,13 +285,15 @@ const FuneralArrangement = () => {
                   setSelectedType(null);
                   setLocation("");
                 }}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-full hover:bg-gray-50 transition"
+                className="px-6 py-3 border rounded-full transition"
+                style={{ borderColor: '#c3d0e0', color: '#364d63', background: '#f0f4f8' }}
               >
                 ← New Search
               </button>
               <button
                 onClick={() => navigate("/procedure")}
-                className="px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition flex items-center gap-2"
+                className="px-6 py-3 rounded-full flex items-center gap-2 transition"
+                style={{ background: '#4ADE80', color: '#fff' }}
               >
                 <span>✓</span>
                 Back to Procedure
@@ -299,7 +306,8 @@ const FuneralArrangement = () => {
         <div className="text-center mt-6">
           <button
             onClick={() => navigate("/procedure")}
-            className="text-gray-600 hover:text-gray-900 transition"
+            className="transition"
+            style={{ color: '#364d63', fontWeight: 500 }}
           >
             ← Back to Procedure
           </button>

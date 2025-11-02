@@ -144,7 +144,7 @@ def get_post_death_checklist(
     relationship: str,
     jurisdiction_terms: str = "",
     additional_context: str = "",
-) -> dict:
+    ) -> dict:
     """
     Calls Gemini with the master prompt and returns a parsed JSON dict.
     Raises ValueError if the model does not return valid JSON.
@@ -160,18 +160,19 @@ def get_post_death_checklist(
         location, relationship, jurisdiction_terms, additional_context
     )
 
+
     result = gemini_client.models.generate_content(
         model="gemini-2.5-flash",
         contents=prompt,
     ).text
 
-    result = (
-        result[len("```json\n") : -len("```")].strip()
-        if result.startswith("```json")
-        else result
-    )
+    if not isinstance(result, str):
+        raise ValueError(f"Gemini API did not return a string. Got: {type(result)} - {result}")
 
-    data = json.loads(result.strip())  # parse to Python dict
+    if result.startswith("```json"):
+        result = result[len("```json\n") : -len("```")].strip()
+
+    data = json.loads(result.strip())        # parse to Python dict
     # output = json.dumps(data, indent=2, ensure_ascii=False)
     return data
 
@@ -189,22 +190,25 @@ def get_post_death_checklist(
 
 # Test
 
-with open(str(pathlib.Path(__file__).parent / "test.txt"), "r") as f:
+
+# Test code below should be guarded by __name__ == "__main__"
+if __name__ == "__main__":
+  with open("test.txt", "r") as f:
     test_json = f.read()
     py_obj = json.loads(test_json)  # from Python-literal string -> dict
     data = py_obj
 
-# print(data['meta'].keys())
+  # print(data['meta'].keys())
 
-print(data["steps"][0].keys())
-# print(data['steps'][0]['substeps'][0].keys())
+  print(data['steps'][0].keys())
+  # print(data['steps'][0]['substeps'][0].keys())
 
-for step in data["steps"]:
-    print(f"{step['automation_level']}: ", step["automation_notes"])
+  for step in data['steps']:
+    print(f"{step['automation_level']}: ", step['automation_notes'])
 
-    for substep in step["substeps"]:
-        print(f"  {substep['automatable']}: ", substep["automation_reason"])
-        if substep["automatable"]:
-            print(f"    Agent Type: {substep['automation_agent_type']}")
+    for substep in step['substeps']:
+      print(f"  {substep['automatable']}: ", substep['automation_reason'])
+      if substep['automatable']:
+        print(f"    Agent Type: {substep['automation_agent_type']}")
 
     print()
