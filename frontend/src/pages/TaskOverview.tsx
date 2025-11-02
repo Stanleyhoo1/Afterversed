@@ -1,5 +1,7 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { SURVEY_STATE_STORAGE_KEY } from "@/lib/config";
 
 interface MainTask {
   id: string;
@@ -55,6 +57,8 @@ const mainTasks: MainTask[] = [
 
 const TaskOverview = () => {
   const navigate = useNavigate();
+  const [progress, setProgress] = useState<number | null>(null);
+  const [completedSet, setCompletedSet] = useState<Set<string>>(new Set());
 
   const handleStartGuide = useCallback(() => {
     navigate("/procedure");
@@ -63,6 +67,71 @@ const TaskOverview = () => {
   const handleGoBack = useCallback(() => {
     navigate("/complete");
   }, [navigate]);
+
+  useEffect(() => {
+    const normalize = (s: string) => (s || "").trim().toLowerCase();
+
+    const bootstrap = async () => {
+      try {
+        const raw = localStorage.getItem(SURVEY_STATE_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        const answers = parsed.answers || {};
+
+        // First, try to get a generated checklist from backend (preferred)
+        let checklist: any = null;
+        try {
+          const res = await fetch("/checklist", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ answers }),
+          });
+          if (res.ok) {
+            const json = await res.json();
+            checklist = json.checklist;
+            const prog = checklist?.meta?.progress;
+            if (typeof prog === "number") setProgress(prog);
+          }
+        } catch (err) {
+          console.warn("Failed to fetch checklist for overview:", err);
+        }
+
+        // If we received a checklist, use it to compute completed titles.
+        if (checklist) {
+          const completed = new Set<string>();
+          (checklist?.steps || []).forEach((step: any) => {
+            if (step.completed) completed.add(step.title);
+            (step.substeps || []).forEach((sub: any) => {
+              if (sub.completed) completed.add(sub.title);
+            });
+          });
+          setCompletedSet(completed);
+          return;
+        }
+
+        // Fallback: compute completion from survey answers directly.
+        // We treat items present in todo_list as "pending" and items not present as completed.
+        const raw_todo = answers.todo_list || answers.todos || [];
+        const todoSet = new Set<string>(
+          Array.isArray(raw_todo) ? raw_todo.map((t: string) => normalize(t)) : []
+        );
+
+        const completed = new Set<string>();
+        mainTasks.forEach((task) => {
+          const tnorm = normalize(task.title);
+          // if the task title appears in the user's todo list -> pending (not completed)
+          if (!todoSet.has(tnorm)) {
+            completed.add(task.title);
+          }
+        });
+        setCompletedSet(completed);
+      } catch (err) {
+        console.warn("Failed to initialise overview state:", err);
+      }
+    };
+
+    bootstrap();
+  }, []);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -114,6 +183,17 @@ const TaskOverview = () => {
             </p>
           </div>
 
+          {/* Progress */}
+          {progress !== null && (
+            <div className="mb-6 text-center">
+              <div className="text-sm text-muted-foreground mb-2">Overview progress</div>
+              <div className="w-full bg-gray-200 rounded-full h-3 max-w-2xl mx-auto">
+                <div className="h-3 bg-primary rounded-full" style={{ width: `${progress}%` }} />
+              </div>
+              <div className="text-sm text-muted-foreground mt-2">{progress}% complete</div>
+            </div>
+          )}
+
           {/* Main Tasks Grid */}
           <div className="space-y-6 mb-12">
             {mainTasks.map((task, index) => (
@@ -144,7 +224,7 @@ const TaskOverview = () => {
                         </span>
                       </div>
                       
-                      <p className="text-base md:text-lg text-foreground/70 leading-relaxed mb-3">
+                      <p className={`text-base md:text-lg leading-relaxed mb-3 ${completedSet.has(task.title) ? 'text-foreground/50 line-through' : 'text-foreground/70'}`}>
                         {task.description}
                       </p>
                       
@@ -153,6 +233,9 @@ const TaskOverview = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span>Estimated time: {task.estimatedTime}</span>
+                        {completedSet.has(task.title) && (
+                          <span className="ml-3 inline-flex items-center px-2 py-1 rounded text-xs bg-green-50 text-green-700 border border-green-100">Completed</span>
+                        )}
                       </div>
                     </div>
                   </div>

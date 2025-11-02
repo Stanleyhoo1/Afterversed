@@ -101,6 +101,23 @@ All colors MUST be HSL.
   }
 }
 
+@keyframes gentle-float {
+  0%, 100% {
+    transform: translateY(0);
+    box-shadow: 0 20px 40px -24px rgba(0, 0, 0, 0.35);
+  }
+  50% {
+    transform: translateY(-6px);
+    box-shadow: 0 26px 48px -20px rgba(0, 0, 0, 0.35);
+  }
+}
+
+@layer utilities {
+  .animate-gentle-float {
+    animation: gentle-float 3s ease-in-out infinite;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

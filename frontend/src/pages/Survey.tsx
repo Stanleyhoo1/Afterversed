@@ -9,6 +9,7 @@ import {
 } from "@/lib/api";
 import { SESSION_STORAGE_KEY, SURVEY_STATE_STORAGE_KEY } from "@/lib/config";
 import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 
 type QuestionType = "choice" | "multiple" | "date";
 
@@ -60,18 +61,6 @@ const questions: Question[] = [
       "We think there is a Will, but we haven't found it yet.",
       "We don't think there is a Will.",
       "I'm not sure."
-    ],
-    required: true
-  },
-  {
-    id: "digital_world",
-    question: "In today's world, our loved ones also leave behind a digital life. Are you worried about any of the following?",
-    type: "choice",
-    options: [
-      "Their social media accounts (like Facebook)",
-      "Their personal email",
-      "Photos or videos stored on a phone or computer",
-      "This isn't a priority for me right now."
     ],
     required: true
   },
@@ -128,6 +117,9 @@ const Survey = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedAt, setCompletedAt] = useState<string | null>(null);
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
+  const [supportInput, setSupportInput] = useState("");
+  const [supportMessages, setSupportMessages] = useState<Array<{ sender: "user" | "assistant"; text: string }>>([]);
 
   const hasCompleted = useMemo(() => Boolean(completedAt), [completedAt]);
 
@@ -403,6 +395,23 @@ const Survey = () => {
     }
   }, [currentStep, handleComplete, hasCompleted, isSubmitting, sessionId]);
 
+  const handleSupportSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const trimmed = supportInput.trim();
+      if (!trimmed) {
+        return;
+      }
+      setSupportMessages(prev => [
+        ...prev,
+        { sender: "user", text: trimmed },
+        { sender: "assistant", text: trimmed },
+      ]);
+      setSupportInput("");
+    },
+    [supportInput],
+  );
+
   if (isLoading) {
     return (
       <div className="min-h-screen relative overflow-hidden">
@@ -649,6 +658,73 @@ const Survey = () => {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+        {isSupportOpen && (
+          <div className="w-80 max-w-[calc(100vw-3rem)] rounded-2xl border border-border bg-card shadow-2xl flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between bg-muted/40 px-4 py-3">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Need someone to talk to?</p>
+                <p className="text-xs text-muted-foreground">We can listen while you breathe.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSupportOpen(false)}
+                className="h-7 w-7 inline-flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted/60 hover:text-foreground transition"
+                aria-label="Close support chat"
+              >
+                ×
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 max-h-[50vh]">
+              {supportMessages.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Share whatever is on your mind. We will reflect it back so you can hear it out loud.
+                </p>
+              ) : (
+                supportMessages.map((message, index) => (
+                  <div
+                    key={`${message.sender}-${index}`}
+                    className={cn(
+                      "max-w-[85%] rounded-2xl px-4 py-2 text-sm shadow-sm",
+                      message.sender === "user"
+                        ? "ml-auto bg-primary text-primary-foreground"
+                        : "mr-auto bg-muted text-foreground",
+                    )}
+                  >
+                    {message.text}
+                  </div>
+                ))
+              )}
+            </div>
+            <form onSubmit={handleSupportSubmit} className="border-t border-border bg-card/80 px-4 py-3 flex items-center gap-2">
+              <input
+                type="text"
+                value={supportInput}
+                onChange={(event) => setSupportInput(event.target.value)}
+                placeholder="Say anything you need to"
+                className="flex-1 rounded-full border border-border bg-background px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              />
+              <button
+                type="submit"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:bg-primary/90 disabled:opacity-60"
+                disabled={!supportInput.trim()}
+                aria-label="Send"
+              >
+                ↩
+              </button>
+            </form>
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => setIsSupportOpen((prev) => !prev)}
+          className="h-14 w-14 rounded-full bg-primary text-2xl text-primary-foreground shadow-xl transition hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary animate-gentle-float"
+          aria-label={isSupportOpen ? "Close support chat" : "Open support chat"}
+        >
+          {isSupportOpen ? "×" : "💬"}
+        </button>
       </div>
     </div>
   );
