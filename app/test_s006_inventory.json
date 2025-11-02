@@ -1,0 +1,187 @@
+{
+  "schema": "S006",
+  "deceased_details": {
+    "full_name": "James Arthur Holloway",
+    "date_of_birth": "1949-07-12",
+    "date_of_death": "2025-01-28",
+    "address": "42 Meadowbank Close, Guildford, Surrey, GU2 8YZ",
+    "executor_name": "Sophie Holloway",
+    "executor_contact": "sophie.holloway@example.com",
+    "executor_phone": "07123456789"
+  },
+
+  "financial_accounts": {
+    "banks": [
+      {
+        "institution": "HSBC UK",
+        "account_type": "Current Account",
+        "account_number": "12345678",
+        "sort_code": "40-12-07",
+        "joint_account": false,
+        "notes": "Primary personal account"
+      },
+      {
+        "institution": "Santander UK",
+        "account_type": "Savings Account",
+        "account_number": "87654321",
+        "sort_code": "09-01-27",
+        "joint_account": true,
+        "notes": "Joint account with spouse"
+      },
+      {
+        "institution": "Barclays Bank",
+        "account_type": "Credit Card",
+        "account_number": "**** **** **** 6543",
+        "notes": "Outstanding balance at time of death"
+      }
+    ],
+
+    "mortgages_loans": [
+      {
+        "provider": "Nationwide Building Society",
+        "loan_type": "Mortgage",
+        "outstanding_balance": 73250.44,
+        "property_address": "42 Meadowbank Close, Guildford, Surrey, GU2 8YZ"
+      },
+      {
+        "provider": "Tesco Bank",
+        "loan_type": "Personal Loan",
+        "outstanding_balance": 4520.00
+      }
+    ],
+
+    "investments": [
+      {
+        "institution": "Hargreaves Lansdown",
+        "type": "Stocks & Shares ISA",
+        "value": 22000.00
+      },
+      {
+        "institution": "NS&I",
+        "type": "Premium Bonds",
+        "value": 5000.00
+      }
+    ]
+  },
+
+  "insurance_policies": {
+    "life_insurance": [
+      {
+        "provider": "Aviva Life Insurance",
+        "policy_number": "LIFE-AV123456",
+        "sum_assured": 80000.00
+      },
+      {
+        "provider": "Legal & General",
+        "policy_number": "LG-45982",
+        "sum_assured": 30000.00
+      }
+    ],
+    "home_insurance": {
+      "provider": "Direct Line",
+      "policy_number": "DL-HOME-98234"
+    },
+    "vehicle_insurance": {
+      "provider": "LV Insurance",
+      "policy_number": "LV-123456"
+    }
+  },
+
+  "pensions": [
+    {
+      "provider": "Scottish Widows",
+      "type": "Private Pension",
+      "policy_number": "SW-PEN-99877",
+      "estimated_value": 65000.00
+    },
+    {
+      "provider": "Department for Work and Pensions",
+      "type": "State Pension",
+      "reference": "DWP-UK-2025"
+    }
+  ],
+
+  "utilities": {
+    "electricity": {
+      "provider": "EDF Energy",
+      "account_number": "EDF-129993",
+      "address": "42 Meadowbank Close, Guildford"
+    },
+    "gas": {
+      "provider": "British Gas",
+      "account_number": "BG-88821"
+    },
+    "water": {
+      "provider": "Thames Water",
+      "account_number": "TW-555239"
+    },
+    "broadband": {
+      "provider": "BT",
+      "account_number": "BT-Internet-11452"
+    },
+    "mobile": {
+      "provider": "EE Mobile",
+      "account_number": "EE-99235"
+    },
+    "tv_license": {
+      "provider": "TV Licensing",
+      "reference": "TVL-2341098"
+    }
+  },
+
+  "subscriptions_and_memberships": [
+    {
+      "service": "Amazon Prime",
+      "account_email": "james.holloway@gmail.com"
+    },
+    {
+      "service": "Netflix",
+      "account_email": "jholloway@netflix.com"
+    },
+    {
+      "service": "National Trust Membership",
+      "membership_id": "NT-98423"
+    },
+    {
+      "service": "RAC Breakdown Cover",
+      "membership_number": "RAC-22998"
+    }
+  ],
+
+  "vehicles": [
+    {
+      "make": "Ford",
+      "model": "Focus Titanium",
+      "registration_number": "GU15 JAH",
+      "insured_with": "LV Insurance"
+    }
+  ],
+
+  "council_and_government": {
+    "local_council": {
+      "name": "Guildford Borough Council",
+      "website": "https://www.guildford.gov.uk"
+    },
+    "tax_authority": {
+      "name": "HM Revenue and Customs",
+      "reference": "HMRC-8765"
+    },
+    "driving_licence": {
+      "agency": "DVLA",
+      "licence_number": "HOLLJ759189JZ9TH"
+    }
+  },
+
+  "charities_and_donations": [
+    {
+      "organisation": "British Heart Foundation",
+      "donor_id": "BHF-11392"
+    },
+    {
+      "organisation": "Cancer Research UK",
+      "donor_id": "CRUK-48101"
+    }
+  ],
+
+  "notes": "Executor will handle correspondence via email where possible. Some accounts may already be linked to the Death Notification Service (DNS)."
+}
