@@ -55,6 +55,17 @@ export async function fetchSurveySession(
   return request<SessionDetailResponse>(`/sessions/${sessionId}`);
 }
 
+export interface DraftEmailResponse {
+  drafts: Array<{
+    heading: string;
+    body: string;
+  }>;
+}
+
+export async function fetchDraftEmails(sessionId: number): Promise<DraftEmailResponse> {
+  return request<DraftEmailResponse>(`/sessions/${sessionId}/draft-emails`);
+}
+
 export async function submitSurveyResults(
   sessionId: number,
   payload: SurveyPayload,

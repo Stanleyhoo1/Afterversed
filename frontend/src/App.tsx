@@ -11,6 +11,7 @@ import Complete from "./pages/Complete";
 import LoadingDemo from "./pages/LoadingDemo";
 import TaskOverview from "./pages/TaskOverview";
 import Procedure from "./pages/Procedure";
+import EmailTemplates from "./pages/EmailTemplates";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -36,6 +37,7 @@ const App = memo(() => (
           <Route path="/loading" element={<LoadingDemo />} />
           <Route path="/overview" element={<TaskOverview />} />
           <Route path="/procedure" element={<Procedure />} />
+          <Route path="/email-templates" element={<EmailTemplates />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,12 +1,17 @@
+import json
 import os
+import pathlib
 from typing import Any, Dict, Optional
+
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from app.database import create_session, get_session, init_db, save_survey_data
+from database import create_session, get_session, init_db, save_survey_data
+from draft_email import draft_emails
+from random_data import generate_random_estate_data
 
 load_dotenv()
 
@@ -48,6 +53,10 @@ class SessionDetailResponse(BaseModel):
     survey_data: Optional[Dict[str, Any]] = None
     completed_at: Optional[str] = None
     created_at: Optional[str] = None
+
+
+class DraftEmailResponse(BaseModel):
+    drafts: list = Field(..., description="List of drafted email templates")
     updated_at: Optional[str] = None
 
 
@@ -92,3 +101,56 @@ async def submit_survey(
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     return SessionDetailResponse(**session)
+
+
+@app.get(
+    "/sessions/{session_id}/draft-emails",
+    response_model=DraftEmailResponse,
+    tags=["emails"],
+)
+async def get_draft_emails(session_id: int) -> DraftEmailResponse:
+    """Get drafted emails for a session."""
+    session = await get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Extract survey data from the session
+    survey_data = session.get("survey_data")
+    if not survey_data:
+        raise HTTPException(
+            status_code=400, detail="No survey data found for this session"
+        )
+
+    # Draft the emails using the survey data
+    try:
+        # Structure the data as expected by draft_emails
+        formatted_data = {
+            "steps": [
+                {
+                    "substeps": [
+                        {
+                            "id": "notify_organizations",
+                            "title": "Notify Organizations",
+                            "description": "Draft notification emails for organizations",
+                            "automation_agent_type": "DraftingAgent",
+                            "inputs_required": [
+                                "organization_details",
+                                "deceased_details",
+                            ],
+                        }
+                    ]
+                }
+            ]
+        }
+
+        # Use the answers from survey_data if available, otherwise use the whole survey_data
+        user_data = survey_data.get("answers", survey_data)
+        with open(str(pathlib.Path(__file__).parent / "temp.txt")) as f:
+            drafts = draft_emails(
+                json.load(f),
+                generate_random_estate_data(),
+            )
+        # drafts = draft_emails(formatted_data, user_data)
+        return DraftEmailResponse(drafts=drafts)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

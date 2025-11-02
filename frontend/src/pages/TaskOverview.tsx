@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { getStoredTaskProgress, STORAGE, subscribeToTaskProgress } from "@/lib/taskProgress";
 
@@ -225,6 +225,13 @@ const TaskOverview = () => {
               <div className="text-sm text-muted-foreground mt-2">{progress}% complete</div>
             </div>
           )}
+
+          {/* Email Templates Link */}
+          <div className="mb-6 text-center">
+            <Link to="/email-templates" className="text-primary hover:text-primary/80 transition-colors font-medium">
+              View Email Templates →
+            </Link>
+          </div>
 
           {/* Main Tasks Grid */}
           <div className="relative mb-16">
