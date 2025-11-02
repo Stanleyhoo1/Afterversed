@@ -167,7 +167,7 @@ npm run dev
 
 ## 🤖 Agent Workflows
 
-### **LangGraph Multi-Agent Pipeline**
+### **Strands Agents Pipeline**
 
 ```
 User Input
