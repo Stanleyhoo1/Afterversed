@@ -1,10 +1,10 @@
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Literal
 
 import aiosqlite
-
+import bcrypt
 
 DB_PATH = Path(__file__).with_name("database.db")
 
@@ -179,3 +179,62 @@ async def verify_user(
     )
 
     await conn.commit()
+
+async def insert_message(
+    conn: aiosqlite.Connection,
+    role: Literal["user", "assistant"],
+    message: str,
+    user_id: int,
+) -> None:
+    """Saves the message
+
+    Args:
+        conn (aiosqlite.Connection): the database connection object
+        role (Literal["user", "assistant"]): who sent the message
+        message (str): the message to be saved
+        user_id (int): the id of the user id to alter
+    """
+    cursor = await conn.execute(
+        """
+        SELECT MAX(sequence) FROM messages WHERE user_id = ?                            
+    """,
+        (user_id,),
+    )
+
+    sequence = (await cursor.fetchone())[0]
+
+    if not sequence:
+        sequence = 0
+
+    cursor = await cursor.execute(
+        """
+        INSERT INTO messages (user_id, role, message, sequence)
+        VALUES (?, ?, ?, ?)
+    """,
+        (
+            user_id,
+            role,
+            message,
+            sequence + 1,
+        ),
+    )
+
+    await conn.commit()
+
+
+async def get_messages(conn: aiosqlite.Connection, user_id: int) -> list[dict]:
+    messages = []
+
+    cursor = await conn.execute(
+        """
+        SELECT * FROM messages WHERE user_id = ? ORDER BY sequence ASC                            
+    """,
+        (user_id,),
+    )
+
+    message_rows = await cursor.fetchall()
+
+    for message_row in message_rows:
+        messages.append({"role": message_row[2], "content": [{"text": message_row[3]}]})
+
+    return messages

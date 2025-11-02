@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from .database import create_session, get_session, init_db, save_survey_data
+from database import create_session, get_session, init_db, save_survey_data
 
 load_dotenv()
 
@@ -16,7 +16,9 @@ app = FastAPI()
 
 origins_env = os.environ.get("FRONTEND_ORIGINS")
 if origins_env:
-    allowed_origins = [origin.strip() for origin in origins_env.split(",") if origin.strip()]
+    allowed_origins = [
+        origin.strip() for origin in origins_env.split(",") if origin.strip()
+    ]
 else:
     allowed_origins = ["*"]
 
@@ -65,7 +67,9 @@ async def create_session_endpoint() -> SessionCreateResponse:
     return SessionCreateResponse(session_id=session_id)
 
 
-@app.get("/sessions/{session_id}", response_model=SessionDetailResponse, tags=["sessions"])
+@app.get(
+    "/sessions/{session_id}", response_model=SessionDetailResponse, tags=["sessions"]
+)
 async def get_session_endpoint(session_id: int) -> SessionDetailResponse:
     session = await get_session(session_id)
     if not session:
@@ -73,8 +77,14 @@ async def get_session_endpoint(session_id: int) -> SessionDetailResponse:
     return SessionDetailResponse(**session)
 
 
-@app.post("/sessions/{session_id}/survey", response_model=SessionDetailResponse, tags=["survey"])
-async def submit_survey(session_id: int, payload: SurveySubmission) -> SessionDetailResponse:
+@app.post(
+    "/sessions/{session_id}/survey",
+    response_model=SessionDetailResponse,
+    tags=["survey"],
+)
+async def submit_survey(
+    session_id: int, payload: SurveySubmission
+) -> SessionDetailResponse:
     saved = await save_survey_data(session_id, payload.dict())
     if not saved:
         raise HTTPException(status_code=404, detail="Session not found")
