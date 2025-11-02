@@ -434,7 +434,6 @@ async def search_funeral_endpoint(
         error_detail = f"Failed to search: {str(e)}\n{traceback.format_exc()}"
         print(error_detail)  # Log to console for debugging
         raise HTTPException(status_code=500, detail=f"Failed to search: {str(e)}")
-<<<<<<< HEAD
 
 
 # ===== LangGraph Multi-Agent Workflow =====
@@ -522,5 +521,3 @@ async def execute_langgraph_workflow(
         print(f"❌ {error_detail}")
         raise HTTPException(status_code=500, detail=f"Workflow failed: {str(e)}")
 
-=======
->>>>>>> 5ddf4f95d00e7f29a6248c0e9a6d359875b827c2
