@@ -1,8 +1,50 @@
-import { useCallback } from "react";
+import { useCallback, useState, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const cloudBackground = new URL("../../assets/cloud.png", import.meta.url).href;
+const cloudMarkerSource = new URL("../../assets/cloud-small.svg", import.meta.url).href;
+
+const polylinePoints = [
+  { x: 20, y: 8 },
+  { x: 44, y: 8 },
+  { x: 66, y: 12 },
+  { x: 85, y: 19 },
+  { x: 92, y: 35 },
+  { x: 84, y: 50 },
+  { x: 60, y: 57 },
+  { x: 33, y: 60 },
+  { x: 13, y: 63 },
+  { x: 33, y: 75 },
+  { x: 50, y: 82 },
+  { x: 65, y: 88 },
+  { x: 83, y: 93 },
+  { x: 77, y: 105 },
+  { x: 59, y: 115 },
+  { x: 37, y: 120 },
+  { x: 14, y: 122 }
+];
+
+const cloudMarkerIndices = [2, 3, 4, 6, 7, 8, 10, 11, 12, 14, 15 ,16] as const;
+const CLOUD_MARKER_WIDTH = 12;
+const CLOUD_MARKER_HEIGHT = 10.3;
+
+const cloudMarkerLabels: Record<(typeof cloudMarkerIndices)[number], string> = {
+  2: "(i)",
+  3: "(ii)",
+  4: "(iii)",
+  6: "(i)",
+  7: "(ii)",
+  8: "(iii)",
+  10: "(i)",
+  11: "(ii)",
+  12: "(iii)",
+  14: "(i)",
+  15: "(ii)",
+  16: "(iii)"
+};
+
+type SvgTransformStyle = CSSProperties & { transformBox?: string };
 
 interface MainTask {
   id: string;
@@ -32,7 +74,7 @@ const mainTasks: MainTask[] = [
   },
   {
     id: "legal_financial",
-    title: "Legal & Finance",
+    title: "Legal & Financial",
     description: "",
     icon: "⚖️",
     estimatedTime: "Ongoing",
@@ -42,7 +84,7 @@ const mainTasks: MainTask[] = [
     id: "notify_organizations",
     title: "Accounts",
     description: "",
-    icon: "📧",
+    icon: "🌐",
     estimatedTime: "2-3 hours",
     priority: "important"
   },
@@ -58,6 +100,15 @@ const mainTasks: MainTask[] = [
 
 const TaskOverview = () => {
   const navigate = useNavigate();
+  const [hoveredMarker, setHoveredMarker] = useState<number | null>(null);
+
+  const handleMarkerEnter = useCallback((index: number) => {
+    setHoveredMarker(index);
+  }, []);
+
+  const handleMarkerLeave = useCallback((index: number) => {
+    setHoveredMarker((current) => (current === index ? null : current));
+  }, []);
 
   const handleStartGuide = useCallback(() => {
     navigate("/procedure");
@@ -93,7 +144,77 @@ const TaskOverview = () => {
 
           {/* Main Tasks Grid */}
           <div className="relative mb-16">
-            <div className="flex flex-col gap-24 md:gap-36 min-h-[220vh]">
+            <svg
+              className="absolute inset-0 hidden lg:block z-20"
+              viewBox="0 0 100 220"
+              preserveAspectRatio="none"
+            >
+              <polyline
+                fill="none"
+                stroke="rgba(54, 77, 99, 0.35)"
+                strokeWidth="2.25"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                pointerEvents="none"
+                points={polylinePoints.map((point) => `${point.x},${point.y}`).join(" ")}
+              />
+              {cloudMarkerIndices.map((vertexIndex) => {
+                const vertex = polylinePoints[vertexIndex - 1];
+                if (!vertex) {
+                  return null;
+                }
+
+                const isHovered = hoveredMarker === vertexIndex;
+                const scale = isHovered ? 1.7 : 1;
+                const scaleTransition = isHovered
+                  ? "transform 0.4s ease-out"
+                  : "transform 0.12s ease-in";
+                const markerStyle: SvgTransformStyle = {
+                  transformOrigin: "50% 50%",
+                  transform: `scale(${scale})`,
+                  transition: scaleTransition,
+                  transformBox: "fill-box"
+                };
+
+                return (
+                  <g key={`cloud-marker-${vertexIndex}`} transform={`translate(${vertex.x}, ${vertex.y})`}>
+                    <g
+                      style={markerStyle}
+                    >
+                      <image
+                        href={cloudMarkerSource}
+                        x={-CLOUD_MARKER_WIDTH / 2}
+                        y={-CLOUD_MARKER_HEIGHT / 2}
+                        width={CLOUD_MARKER_WIDTH}
+                        height={CLOUD_MARKER_HEIGHT}
+                        preserveAspectRatio="xMidYMid meet"
+                        onMouseEnter={() => handleMarkerEnter(vertexIndex)}
+                        onMouseLeave={() => handleMarkerLeave(vertexIndex)}
+                        style={{
+                          cursor: "pointer",
+                          pointerEvents: "visiblePainted",
+                          opacity: isHovered ? 1 : 0.3,
+                          transition: isHovered ? "opacity 0s linear" : "opacity 0.12s ease-out"
+                        }}
+                      />
+                      <text
+                        x={0}
+                        y={0}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fontSize="4"
+                        fill="#364d63"
+                        fontWeight="600"
+                        pointerEvents="none"
+                      >
+                        {cloudMarkerLabels[vertexIndex]}
+                      </text>
+                    </g>
+                  </g>
+                );
+              })}
+            </svg>
+            <div className="relative z-10 flex flex-col gap-24 md:gap-36 min-h-[260vh]">
               {mainTasks.map((task, index) => {
                 const isLeftAligned = index % 2 === 0;
                 const alignmentClass = isLeftAligned ? "items-start" : "items-end";
@@ -118,23 +239,21 @@ const TaskOverview = () => {
                           backgroundImage: `url(${cloudBackground})`,
                         }}
                       >
-                        <div className="w-full rounded-3xl border border-border/60 bg-background/85 px-6 py-6 sm:px-8 sm:py-8 flex items-center gap-6 shadow-sm">
-                          <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-primary/10 text-4xl sm:text-5xl">
+                        <div className="w-full px-6 py-6 sm:px-8 sm:py-8 flex items-center gap-6">
+                          <div className="text-4xl sm:text-5xl" style={{ textShadow: "0 12px 24px rgba(54, 77, 99, 0.25)" }}>
                             {task.icon}
                           </div>
-                          <div className="flex-1 space-y-4">
-                            <div className="flex flex-wrap items-center justify-between gap-3">
-                              <span className="inline-flex items-center justify-center rounded-full bg-secondary/20 px-4 py-1 text-sm font-semibold text-secondary-foreground">
-                                Step {index + 1}
-                              </span>
-                              <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                                <span role="img" aria-hidden="true">🕒</span>
-                                <span>{task.estimatedTime}</span>
-                              </span>
-                            </div>
-                            <h2 className="text-2xl sm:text-3xl font-semibold text-foreground">
+                          <div className="flex-1 flex flex-col items-start gap-4">
+                            <span className="inline-flex items-center justify-center rounded-full bg-secondary/20 px-4 py-1 text-sm font-semibold text-secondary-foreground">
+                              Step {index + 1}
+                            </span>
+                            <h2 className="text-3xl sm:text-4xl font-semibold text-foreground leading-tight">
                               {task.title}
                             </h2>
+                            <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                              <span role="img" aria-hidden="true">🕒</span>
+                              <span>{task.estimatedTime}</span>
+                            </span>
                           </div>
                         </div>
                       </div>
