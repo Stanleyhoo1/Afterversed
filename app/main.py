@@ -10,6 +10,7 @@ from database import create_session, get_session, init_db, save_survey_data, upd
 from agents import get_post_death_checklist
 from compute_agent import compute_figures
 from search import search_agent
+from langgraph_workflow import create_langgraph_workflow
 
 load_dotenv()
 
@@ -346,4 +347,90 @@ async def search_funeral_endpoint(
         error_detail = f"Failed to search: {str(e)}\n{traceback.format_exc()}"
         print(error_detail)  # Log to console for debugging
         raise HTTPException(status_code=500, detail=f"Failed to search: {str(e)}")
+
+
+# ===== LangGraph Multi-Agent Workflow =====
+
+class LangGraphWorkflowRequest(BaseModel):
+    """Request for LangGraph multi-agent workflow"""
+    property_value: float = Field(default=0, description="Property value in GBP")
+    bank_balances: float = Field(default=0, description="Total bank balances in GBP")
+    investments: float = Field(default=0, description="Investment value in GBP")
+    debts: float = Field(default=0, description="Total debts in GBP")
+    funeral_costs: float = Field(default=3500, description="Funeral costs in GBP")
+
+
+class LangGraphWorkflowResponse(BaseModel):
+    """Response from LangGraph workflow"""
+    workflow_id: str
+    status: str
+    execution_date: str
+    executive_summary: Dict[str, Any]
+    timeline: list
+    financial_summary: Dict[str, Any]
+    tax_summary: Dict[str, Any]
+    probate_summary: Dict[str, Any]
+    next_actions: list
+    key_deadlines: list
+    documents_generated: Dict[str, Any]
+    validation_status: Dict[str, Any]
+
+
+@app.post(
+    "/sessions/{session_id}/langgraph-workflow",
+    response_model=LangGraphWorkflowResponse,
+    tags=["automation"],
+)
+async def execute_langgraph_workflow(
+    session_id: int, request: LangGraphWorkflowRequest
+) -> LangGraphWorkflowResponse:
+    """
+    Execute LangGraph multi-agent workflow for Financial & Legal Matters
+    Pipeline: SearchAgent → DraftingAgent → FormAgent → ComputeAgent → Report
+    """
+    session = await get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    try:
+        # Create workflow
+        workflow = create_langgraph_workflow()
+        
+        # Prepare estate data
+        estate_data = {
+            "property_value": request.property_value,
+            "bank_balances": request.bank_balances,
+            "investments": request.investments,
+            "debts": request.debts,
+            "funeral_costs": request.funeral_costs
+        }
+        
+        # Get survey data
+        survey_data = session.get("survey_data", {})
+        
+        # Execute workflow
+        print(f"\n🚀 Executing LangGraph workflow for session {session_id}")
+        result = await workflow.execute(session_id, survey_data, estate_data)
+        
+        # Update task status
+        await update_task_status(
+            session_id=session_id,
+            task_id="legal_financial_workflow",
+            status="completed",
+            results=result
+        )
+        
+        print(f"✅ Workflow completed for session {session_id}")
+        
+        return LangGraphWorkflowResponse(**result)
+        
+    except ImportError as e:
+        error_msg = "LangGraph dependencies not installed. Run: pip install langgraph langchain-google-genai langchain-core"
+        print(f"❌ {error_msg}")
+        raise HTTPException(status_code=500, detail=error_msg)
+    except Exception as e:
+        import traceback
+        error_detail = f"Workflow failed: {str(e)}\n{traceback.format_exc()}"
+        print(f"❌ {error_detail}")
+        raise HTTPException(status_code=500, detail=f"Workflow failed: {str(e)}")
 
