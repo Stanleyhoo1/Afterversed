@@ -546,6 +546,114 @@ RULES:
     return data
 
 
+@tool
+def notify():
+    agent = Agent(tools=[], model=model)
+
+    # Step 2: Convert JSON into a readable text block for Gemini
+    prompt = f"""
+You are an intelligent Research & Compilation Agent. 
+Use ONLY the provided tools and output valid JSON.
+
+# Goal
+Based on the asset and liability inventory (S006), compile a comprehensive and *verified* list 
+of UK organisations that should be notified after a death. 
+For each organisation, include official contact details such as website, 
+email address, or customer service phone number if publicly listed.
+
+Focus on:
+- Banks and building societies
+- Credit cards, loan, and mortgage providers
+- Life insurance and pension companies
+- Utility companies (gas, electricity, water)
+- Telecom and broadband providers
+- Local council and government departments
+- Other major organisations commonly requiring notification (e.g. TV Licensing, NS&I)
+
+
+# Data sources
+Use authoritative and reputable UK websites only, such as:
+- https://www.gov.uk/after-a-death/stop-services-organisations
+- https://www.moneyhelper.org.uk/
+- https://www.deathnotificationservice.co.uk/
+- The organisations’ own official .co.uk / .com websites (e.g. barclays.co.uk, aviva.co.uk, britishgas.co.uk)
+
+# Steps
+1. Use browser_open() to visit one or more of the above trusted URLs.
+2. Identify major organisations within each of the following categories:
+   - banks
+   - insurers
+   - utilities
+   - telecom
+   - government
+   - others
+3. For each organisation found, extract the following (if available):
+   - official website URL (prefer domains ending in .co.uk, .org.uk, .gov.uk)
+   - customer service or bereavement contact page
+   - email address (if explicitly provided on a bereavement/contact page)
+   - customer service phone number
+4. Ensure data is clean and non-duplicated.
+5. Structure your findings in this JSON format:
+
+{{
+  "banks": [
+    {{"name": "Barclays", "website": "https://www.barclays.co.uk/bereavement/", "phone": "0800 008 008", "email": null}},
+    {{"name": "Santander", "website": "https://www.santander.co.uk/personal/support/bereavement", "phone": "0800 587 5870", "email": null}}
+  ],
+  "insurers": [
+    {{"name": "Aviva", "website": "https://www.aviva.co.uk/help-and-support/claims/life-insurance/", "phone": "0800 068 2739", "email": null}}
+  ],
+  "utilities": [
+    {{"name": "British Gas", "website": "https://www.britishgas.co.uk/help-and-support/bereavement", "phone": "0333 202 9802", "email": null}}
+  ],
+  "telecom": [
+    {{"name": "BT", "website": "https://www.bt.com/help/bereavement", "phone": "0800 800 150", "email": null}}
+  ],
+  "government": [
+    {{"name": "HMRC", "website": "https://www.gov.uk/tell-hmrc-about-a-death", "phone": null, "email": null}},
+    {{"name": "DVLA", "website": "https://www.gov.uk/tell-dvla-about-a-bereavement", "phone": null, "email": null}}
+  ],
+  "others": [
+    {{"name": "TV Licensing", "website": "https://www.tvlicensing.co.uk/faqs/FAQ167", "phone": "0300 790 6165", "email": null}}
+  ]
+}}
+
+6. Only include information that can be verified from reputable, public UK sources.
+7. Return *only valid JSON* — no additional commentary or text.
+
+# Output format
+{{
+  "banks": [ ... ],
+  "insurers": [ ... ],
+  "utilities": [ ... ],
+  "telecom": [ ... ],
+  "government": [ ... ],
+  "others": [ ... ]
+}}
+
+# Notes
+- Avoid including random blog posts or aggregator sites.
+- Always prioritise official or bereavement contact pages over generic homepages.
+- If no phone/email is found, leave the field null.
+- Do not include social media links or marketing sites.
+"""
+
+    # Run the agent
+    response = agent(prompt)
+
+    # Extract the plain text (what the model produced)
+    text = getattr(response, "text", str(response)).strip()
+
+    # Remove Markdown JSON fencing if the model adds it
+    if text.startswith("```json"):
+        text = text[7:]  # remove ```json
+    if text.endswith("```"):
+        text = text[:-3]
+    text = text.strip()
+    data = json.loads(text)
+    return data
+
+
 def search_agent(user_query):
     try:
         SYS = (
@@ -554,7 +662,7 @@ def search_agent(user_query):
         )
 
         agent = Agent(
-            tools=[find_funeral, register_death],
+            tools=[find_funeral, register_death, notify],
             model=model,
             system_prompt=SYS,  # if your Agent supports 'system'; otherwise remove
         )
@@ -579,3 +687,6 @@ def search_agent(user_query):
 
 if __name__ == "__main__":
     print(search_agent("Find me the best funeral prices in Stratford"))
+
+# user_query = "Find funeral homes in Stratford, London, UK for cremation, burial, and woodland."
+# user_query = "Register a death in Covent Garden, London, UK for postcode WC2E 8RA."
