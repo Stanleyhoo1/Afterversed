@@ -8,96 +8,94 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 210 15% 92%;
-    --foreground: 220 15% 20%;
+    --color-charcoal: 204 8% 20%;
+    --color-ivory: 36 30% 96%;
+    --color-soft-taupe: 20 25% 71%;
+    --color-muted-navy: 209 29% 30%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 15% 20%;
+    --background: var(--color-ivory);
+    --foreground: var(--color-charcoal);
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 20%;
+    --card: var(--color-ivory);
+    --card-foreground: var(--color-charcoal);
 
-    --primary: 45 95% 55%;
-    --primary-foreground: 220 15% 20%;
+    --popover: var(--color-ivory);
+    --popover-foreground: var(--color-charcoal);
 
-    --secondary: 210 20% 85%;
-    --secondary-foreground: 220 15% 20%;
+    --primary: var(--color-soft-taupe);
+    --primary-foreground: var(--color-charcoal);
 
-    --muted: 210 20% 88%;
-    --muted-foreground: 220 10% 50%;
+    --secondary: var(--color-muted-navy);
+    --secondary-foreground: var(--color-ivory);
 
-    --accent: 45 95% 65%;
-    --accent-foreground: 220 15% 20%;
+    --muted: var(--color-soft-taupe);
+    --muted-foreground: var(--color-charcoal);
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
+    --accent: var(--color-soft-taupe);
+    --accent-foreground: var(--color-charcoal);
 
-    --border: 210 15% 80%;
-    --input: 210 15% 85%;
-    --ring: 45 95% 55%;
+    --destructive: var(--color-muted-navy);
+    --destructive-foreground: var(--color-ivory);
+
+    --border: var(--color-muted-navy);
+    --input: var(--color-muted-navy);
+    --ring: var(--color-soft-taupe);
 
     --radius: 0.75rem;
-    
-    --gradient-bg: linear-gradient(135deg, hsl(210, 15%, 92%), hsl(220, 15%, 85%));
-    --gradient-sun: radial-gradient(circle at top right, hsl(45, 95%, 60%) 0%, transparent 50%);
 
-    --sidebar-background: 0 0% 98%;
+    --gradient-bg: linear-gradient(135deg, hsl(var(--color-ivory)), hsl(var(--color-soft-taupe)));
+    --gradient-sun: radial-gradient(circle at top right, hsl(var(--color-soft-taupe)) 0%, transparent 60%);
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: var(--color-ivory);
+    --sidebar-foreground: var(--color-charcoal);
+    --sidebar-primary: var(--color-muted-navy);
+    --sidebar-primary-foreground: var(--color-ivory);
+    --sidebar-accent: var(--color-soft-taupe);
+    --sidebar-accent-foreground: var(--color-charcoal);
+    --sidebar-border: var(--color-muted-navy);
+    --sidebar-ring: var(--color-soft-taupe);
   }
 
   .dark {
-    --background: 220 20% 15%;
-    --foreground: 210 15% 95%;
+    --background: var(--color-charcoal);
+    --foreground: var(--color-ivory);
 
-    --card: 220 20% 18%;
-    --card-foreground: 210 15% 95%;
+    --card: var(--color-muted-navy);
+    --card-foreground: var(--color-ivory);
 
-    --popover: 220 20% 18%;
-    --popover-foreground: 210 15% 95%;
+    --popover: var(--color-muted-navy);
+    --popover-foreground: var(--color-ivory);
 
-    --primary: 45 95% 55%;
-    --primary-foreground: 220 15% 20%;
+    --primary: var(--color-soft-taupe);
+    --primary-foreground: var(--color-charcoal);
 
-    --secondary: 220 15% 25%;
-    --secondary-foreground: 210 15% 95%;
+    --secondary: var(--color-ivory);
+    --secondary-foreground: var(--color-charcoal);
 
-    --muted: 220 15% 25%;
-    --muted-foreground: 210 10% 65%;
+    --muted: var(--color-soft-taupe);
+    --muted-foreground: var(--color-charcoal);
 
-    --accent: 45 95% 65%;
-    --accent-foreground: 220 15% 20%;
+    --accent: var(--color-soft-taupe);
+    --accent-foreground: var(--color-charcoal);
 
-    --destructive: 0 62.8% 50.6%;
-    --destructive-foreground: 210 15% 95%;
+    --destructive: var(--color-muted-navy);
+    --destructive-foreground: var(--color-ivory);
 
-    --border: 220 15% 30%;
-    --input: 220 15% 30%;
-    --ring: 45 95% 55%;
-    
-    --gradient-bg: linear-gradient(135deg, hsl(220, 20%, 15%), hsl(225, 20%, 10%));
-    --gradient-sun: radial-gradient(circle at top right, hsl(45, 95%, 50%) 0%, transparent 50%);
-    
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: var(--color-soft-taupe);
+    --input: var(--color-soft-taupe);
+    --ring: var(--color-soft-taupe);
+
+    --gradient-bg: linear-gradient(135deg, hsl(var(--color-charcoal)), hsl(var(--color-muted-navy)));
+    --gradient-sun: radial-gradient(circle at top right, hsl(var(--color-soft-taupe)) 0%, transparent 60%);
+
+    --sidebar-background: var(--color-charcoal);
+    --sidebar-foreground: var(--color-ivory);
+    --sidebar-primary: var(--color-soft-taupe);
+    --sidebar-primary-foreground: var(--color-charcoal);
+    --sidebar-accent: var(--color-muted-navy);
+    --sidebar-accent-foreground: var(--color-ivory);
+    --sidebar-border: var(--color-soft-taupe);
+    --sidebar-ring: var(--color-soft-taupe);
   }
 }
 

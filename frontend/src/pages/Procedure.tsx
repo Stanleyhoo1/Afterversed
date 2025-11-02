@@ -1,6 +1,11 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import { getTaskStatuses } from "@/lib/api";
+=======
+import { setStoredTaskProgress } from "@/lib/taskProgress";
+import { fetchSurveySession, getTaskStatuses } from "@/lib/api";
+>>>>>>> 7318b931ba9cb3892e809d38b24ec615731c3581
 import { SESSION_STORAGE_KEY } from "@/lib/config";
 
 interface Step {
@@ -176,6 +181,20 @@ const procedureSteps: Step[] = [
   }
 ];
 
+const sequentialTaskOrder = procedureSteps.flatMap(step => step.tasks.map(task => task.id));
+
+const computeSequentialProgress = (completed: Set<string>): number => {
+  let count = 0;
+  for (const taskId of sequentialTaskOrder) {
+    if (completed.has(taskId)) {
+      count += 1;
+    } else {
+      break;
+    }
+  }
+  return count;
+};
+
 const Procedure = () => {
   const navigate = useNavigate();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -239,11 +258,21 @@ const Procedure = () => {
     navigate("/complete");
   }, [navigate]);
 
+  const persistProgress = useCallback((completedSet: Set<string>) => {
+    const sequentialCount = computeSequentialProgress(completedSet);
+    setStoredTaskProgress(sequentialCount);
+  }, []);
+
   const handleCompleteTask = useCallback(() => {
     if (currentTaskIndex === null) return;
 
     const taskId = currentStep.tasks[currentTaskIndex].id;
-    setCompletedTasks(prev => new Set(prev).add(taskId));
+    setCompletedTasks(prev => {
+      const next = new Set(prev);
+      next.add(taskId);
+      persistProgress(next);
+      return next;
+    });
 
     // Move to next task or next step
     if (currentTaskIndex < currentStep.tasks.length - 1) {
@@ -258,7 +287,7 @@ const Procedure = () => {
         navigate("/complete");
       }
     }
-  }, [currentTaskIndex, currentStep, currentStepIndex, navigate]);
+  }, [currentTaskIndex, currentStep, currentStepIndex, navigate, persistProgress]);
 
   const handleSkipTask = useCallback(() => {
     if (currentTaskIndex === null) return;
@@ -281,14 +310,14 @@ const Procedure = () => {
     <div className="min-h-screen relative overflow-hidden">
       {/* Background */}
       <div 
-        className="absolute inset-0 bg-gradient-to-br from-[hsl(210,15%,92%)] to-[hsl(220,15%,85%)]"
+        className="absolute inset-0"
         style={{
-          background: 'linear-gradient(135deg, hsl(210, 15%, 92%), hsl(220, 15%, 85%))',
+          background: 'var(--gradient-bg)',
         }}
       />
 
       {/* Progress bar */}
-      <div className="fixed top-0 left-0 right-0 h-2 bg-gray-300 z-50">
+      <div className="fixed top-0 left-0 right-0 h-2 bg-secondary/20 z-50">
         <div 
           className="h-full bg-primary transition-all duration-500 ease-out"
           style={{ width: `${progress}%` }}
@@ -358,6 +387,15 @@ const Procedure = () => {
                     const isCurrent = currentTaskIndex === index;
                     const isFaded = currentTaskIndex !== null && !isCurrent && !isCompleted;
 
+                    const taskClasses = [
+                      "border-2 rounded-xl p-6 transition-all duration-300",
+                      isCurrent ? "border-primary bg-primary/5 shadow-lg scale-105" : "border-border bg-background",
+                      isFaded ? "opacity-30" : "opacity-100",
+                      isCompleted ? "border-secondary bg-secondary/15" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ");
+
                     return (
                       <div
                         key={task.id}
@@ -380,7 +418,7 @@ const Procedure = () => {
                             ) : isCurrent ? (
                               <div className="w-6 h-6 rounded-full border-2 border-primary bg-primary/20"></div>
                             ) : (
-                              <div className="w-6 h-6 rounded-full border-2 border-gray-300"></div>
+                              <div className="w-6 h-6 rounded-full border-2 border-border"></div>
                             )}
                           </div>
 
