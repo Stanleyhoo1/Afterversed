@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from database import create_session, get_session, init_db, save_survey_data
+from app.database import create_session, get_session, init_db, save_survey_data
 
 load_dotenv()
 

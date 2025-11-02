@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import SupportAssistant from "./components/SupportAssistant";
 import Index from "./pages/Index";
 import Survey from "./pages/Survey";
 import Complete from "./pages/Complete";
@@ -27,6 +28,7 @@ const App = memo(() => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <SupportAssistant />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/survey" element={<Survey />} />

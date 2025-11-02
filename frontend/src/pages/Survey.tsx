@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+
 import {
   createSurveySession,
   fetchSurveySession,
@@ -131,7 +132,7 @@ const Survey = () => {
 
     const bootstrap = async () => {
       try {
-        let storedSessionId = localStorage.getItem(SESSION_STORAGE_KEY);
+        const storedSessionId = localStorage.getItem(SESSION_STORAGE_KEY);
         let resolvedSessionId = storedSessionId ? Number.parseInt(storedSessionId, 10) : NaN;
 
         if (Number.isNaN(resolvedSessionId)) {
@@ -416,9 +417,9 @@ const Survey = () => {
     return (
       <div className="min-h-screen relative overflow-hidden">
         <div
-          className="absolute inset-0 bg-gradient-to-br from-[hsl(210,15%,92%)] to-[hsl(220,15%,85%)]"
+          className="absolute inset-0"
           style={{
-            background: "linear-gradient(135deg, hsl(210, 15%, 92%), hsl(220, 15%, 85%))",
+            background: "var(--gradient-bg)",
           }}
         />
         <div className="relative z-10 flex items-center justify-center min-h-screen">
@@ -432,9 +433,9 @@ const Survey = () => {
     return (
       <div className="min-h-screen relative overflow-hidden">
         <div
-          className="absolute inset-0 bg-gradient-to-br from-[hsl(210,15%,92%)] to-[hsl(220,15%,85%)]"
+          className="absolute inset-0"
           style={{
-            background: "linear-gradient(135deg, hsl(210, 15%, 92%), hsl(220, 15%, 85%))",
+            background: "var(--gradient-bg)",
           }}
         />
         <div className="relative z-10 container mx-auto px-4 py-12 flex flex-col items-center justify-center min-h-screen">
@@ -522,14 +523,14 @@ const Survey = () => {
     <div className="min-h-screen relative overflow-hidden">
       {/* Background */}
       <div 
-        className="absolute inset-0 bg-gradient-to-br from-[hsl(210,15%,92%)] to-[hsl(220,15%,85%)]"
+        className="absolute inset-0"
         style={{
-          background: 'linear-gradient(135deg, hsl(210, 15%, 92%), hsl(220, 15%, 85%))',
+          background: 'var(--gradient-bg)',
         }}
       />
 
       {/* Progress bar */}
-      <div className="fixed top-0 left-0 right-0 h-2 bg-gray-300 z-50">
+      <div className="fixed top-0 left-0 right-0 h-2 bg-secondary/20 z-50">
         <div 
           className="h-full bg-primary transition-all duration-500 ease-out"
           style={{ width: `${progress}%` }}
@@ -583,7 +584,7 @@ const Survey = () => {
                         checked={selectedOptions.includes(option)}
                         onChange={() => handleMultipleSelect(option)}
                         disabled={isSubmitting}
-                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer disabled:cursor-not-allowed"
+                        className="w-5 h-5 rounded border-border text-primary focus:ring-primary cursor-pointer disabled:cursor-not-allowed"
                       />
                       <span className="text-base md:text-lg">{option}</span>
                     </label>
@@ -621,7 +622,7 @@ const Survey = () => {
                     table: "border-collapse mx-auto",
                     cell: "w-11 h-11 flex items-center justify-center",
                     day: "h-11 w-11 rounded-full text-sm font-medium transition-colors flex items-center justify-center aria-selected:bg-primary aria-selected:text-primary-foreground hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    day_today: "text-red-600 font-semibold",
+                    day_today: "text-secondary font-semibold",
                   }}
                 />
                 <button
