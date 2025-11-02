@@ -83,3 +83,99 @@ async def save_survey_data(session_id: int, survey_payload: Dict[str, Any]) -> b
         )
         await db.commit()
         return cursor.rowcount > 0
+
+async def get_db() -> aiosqlite.Connection:
+    """Returns a database connection
+
+    Returns:
+        aiosqlite.Connection: the database connection
+    """
+    conn = await aiosqlite.connect(str(DB_PATH))
+    return conn
+
+
+async def close_db(conn: aiosqlite.Connection) -> None:
+    """Closes the database connection
+
+    Args:
+        conn (aiosqlite.Connection): the database connection object
+    """
+    await conn.close()
+
+
+async def load_schema(
+    conn: aiosqlite.Connection, schema_path: str = str(DB_PATH.parent / "schema.sql")
+) -> None:
+    """Loads the schema from the schema file
+
+    Args:
+        conn (aiosqlite.Connection): the database connection
+        schema_path (str, optional): the path to the schema file. Defaults to str(DB_PATH.parent / "schema.sql").
+    """
+    with open(schema_path) as f:
+        commands = f.read()
+    for command in commands.split(";"):
+        await conn.execute(command)
+    await conn.commit()
+
+
+async def create_user(conn: aiosqlite.Connection, username: str, password: str) -> int:
+    """Adds a new user to the database
+
+    Args:
+        conn (aiosqlite.Connection): the database connection object
+        username (str): the username
+        password (str): the unhashed password
+
+    Returns:
+        int: the id of the new user entry
+    """
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password.encode(), salt)
+    cursor = await conn.execute(
+        """
+        INSERT INTO users (permanent_account, username, hashed_password, salt)
+        VALUES (?, ?, ?, ?)
+    """,
+        (
+            0,  # 0 for false
+            username,
+            hashed_password,
+            salt,
+        ),
+    )
+
+    await conn.commit()
+    await cursor.close()
+    return cursor.lastrowid
+
+
+async def verify_user(
+    conn: aiosqlite.Connection, username: str, password: str, user_id: int
+) -> None:
+    """Makes a permanent user row to the database
+
+    Args:
+        conn (aiosqlite.Connection): the database connection object
+        username (str): the username
+        password (str): the unhashed password
+        user_id (int): the id of the user id to alter
+    """
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password.encode(), salt)
+    await conn.execute(
+        """
+        UPDATE users
+        SET permanent_account = ?, username = ?, hashed_password = ?, salt = ?
+        WHERE id=?;
+    """,
+        (
+            1,  # 1 for true
+            username,
+            hashed_password,
+            salt,
+            user_id,
+        ),
+    )
+
+    await conn.commit()
