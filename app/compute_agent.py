@@ -7,6 +7,8 @@ from google import genai
 from google.genai import types
 from pprint import pprint
 
+from .random_data import generate_random_financial_data
+
 # --- Setup ---
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -153,7 +155,7 @@ Your response MUST be a JSON object `{}` with the following keys:
 
                         # Use our NEW general printer for ALL tasks
                         output = format_general_report(computations)
-
+                        print(output)
                         results.append({"id": substeps["id"], "body": output})
 
                         print("-----------------------------------")
@@ -169,135 +171,136 @@ if __name__ == "__main__":
         pprint(
             compute_figures(
                 json.load(f),
-                {
-                    "deceased_details": {
-                        "name": "John Alistair Smith",
-                        "date_of_passing": "2025-10-15",
-                    },
-                    "executor_details": {
-                        "name": "Jane Mary Smith",
-                        "relationship": "Spouse",
-                    },
-                    "assets": {
-                        "real_estate": [
-                            {
-                                "id": "prop1",
-                                "address": "123 Oak Avenue, Anytown, AT 45678",
-                                "ownership": "Jointly Owned (with Jane Mary Smith)",
-                                "value_at_death": 500000,
-                                "passes_to_survivor": True,
-                                "notes": "Passes to spouse Jane Smith automatically.",
-                            },
-                            {
-                                "id": "prop2",
-                                "address": "22b Baker Street, London, W1U 3BW",
-                                "ownership": "Solely Owned",
-                                "value_at_death": 350000,
-                                "passes_to_survivor": False,
-                                "notes": "Forms part of the probate estate.",
-                            },
-                        ],
-                        "bank_accounts": [
-                            {
-                                "id": "bank1",
-                                "institution": "Mainstream Bank",
-                                "type": "Chequing Account",
-                                "account_number": "00123-456789",
-                                "ownership": "Solely Owned",
-                                "value_at_death": 12000,
-                                "passes_to_survivor": False,
-                            },
-                            {
-                                "id": "bank2",
-                                "institution": "Mainstream Bank",
-                                "type": "Savings Account",
-                                "account_number": "00123-987654",
-                                "ownership": "Jointly Owned (with Jane Mary Smith)",
-                                "value_at_death": 80000,
-                                "passes_to_survivor": True,
-                            },
-                        ],
-                        "investments": [
-                            {
-                                "id": "inv1",
-                                "institution": "Capital Investments",
-                                "type": "Portfolio Account",
-                                "account_number": "CI-45882B",
-                                "ownership": "Solely Owned",
-                                "value_at_death": 120000,
-                                "passes_to_survivor": False,
-                            }
-                        ],
-                        "pensions": [
-                            {
-                                "id": "pension1",
-                                "institution": "National Pension Fund",
-                                "type": "Defined Benefit",
-                                "account_number": "NPF-JSMITH-72",
-                                "notes": "Passes outside of estate to nominated beneficiary (Jane Smith). Not included in IHT or probate value.",
-                            }
-                        ],
-                        "personal_chattels": {
-                            "id": "chattels1",
-                            "description": "Art, furniture, and personal belongings",
-                            "ownership": "Solely Owned",
-                            "value_at_death": 15000,
-                            "passes_to_survivor": False,
-                        },
-                    },
-                    "liabilities": {
-                        "mortgages": [
-                            {
-                                "id": "mort1",
-                                "property_id": "prop2",
-                                "provider": "City Mortgage Corp",
-                                "outstanding_balance": 100000,
-                            }
-                        ],
-                        "credit_cards": [
-                            {
-                                "id": "cc1",
-                                "provider": "Premier Credit",
-                                "outstanding_balance": 2500,
-                            }
-                        ],
-                        "utility_bills": 450,
-                        "funeral_costs": 4000,
-                    },
-                    "post_death_transactions": {
-                        "assets_sold": [
-                            {
-                                "asset_id": "inv1",
-                                "description": "Capital Investments Portfolio",
-                                "value_at_death": 120000,
-                                "sale_price": 145000,
-                                "costs_of_sale": 1500,
-                            }
-                        ],
-                        "administration_expenses": {
-                            "legal_fees": 3000,
-                            "probate_fees": 273,
-                        },
-                        "income_received_post_death": {"bank_interest": 350},
-                    },
-                    "tax_and_will_details": {
-                        "probate_thresholds": {
-                            "hmcts": 5000,
-                            "mainstream_bank": 50000,
-                            "capital_investments": 25000,
-                        },
-                        "iht_thresholds": {
-                            "nil_rate_band": 325000,
-                            "residence_nil_rate_band": 175000,
-                            "iht_rate_percent": 40,
-                        },
-                        "cgt_tax_rate_percent": 20,
-                        "will_summary": {
-                            "leaves_everything_to_spouse": True,
-                            "spouse_name": "Jane Mary Smith",
-                            "notes": "All assets pass to the surviving spouse. This means the estate benefits from 100% spousal exemption for IHT.",
-                        },
-                    },
-                },
+                generate_random_financial_data(),
+                # {
+                #     "deceased_details": {
+                #         "name": "John Alistair Smith",
+                #         "date_of_passing": "2025-10-15",
+                #     },
+                #     "executor_details": {
+                #         "name": "Jane Mary Smith",
+                #         "relationship": "Spouse",
+                #     },
+                #     "assets": {
+                #         "real_estate": [
+                #             {
+                #                 "id": "prop1",
+                #                 "address": "123 Oak Avenue, Anytown, AT 45678",
+                #                 "ownership": "Jointly Owned (with Jane Mary Smith)",
+                #                 "value_at_death": 500000,
+                #                 "passes_to_survivor": True,
+                #                 "notes": "Passes to spouse Jane Smith automatically.",
+                #             },
+                #             {
+                #                 "id": "prop2",
+                #                 "address": "22b Baker Street, London, W1U 3BW",
+                #                 "ownership": "Solely Owned",
+                #                 "value_at_death": 350000,
+                #                 "passes_to_survivor": False,
+                #                 "notes": "Forms part of the probate estate.",
+                #             },
+                #         ],
+                #         "bank_accounts": [
+                #             {
+                #                 "id": "bank1",
+                #                 "institution": "Mainstream Bank",
+                #                 "type": "Chequing Account",
+                #                 "account_number": "00123-456789",
+                #                 "ownership": "Solely Owned",
+                #                 "value_at_death": 12000,
+                #                 "passes_to_survivor": False,
+                #             },
+                #             {
+                #                 "id": "bank2",
+                #                 "institution": "Mainstream Bank",
+                #                 "type": "Savings Account",
+                #                 "account_number": "00123-987654",
+                #                 "ownership": "Jointly Owned (with Jane Mary Smith)",
+                #                 "value_at_death": 80000,
+                #                 "passes_to_survivor": True,
+                #             },
+                #         ],
+                #         "investments": [
+                #             {
+                #                 "id": "inv1",
+                #                 "institution": "Capital Investments",
+                #                 "type": "Portfolio Account",
+                #                 "account_number": "CI-45882B",
+                #                 "ownership": "Solely Owned",
+                #                 "value_at_death": 120000,
+                #                 "passes_to_survivor": False,
+                #             }
+                #         ],
+                #         "pensions": [
+                #             {
+                #                 "id": "pension1",
+                #                 "institution": "National Pension Fund",
+                #                 "type": "Defined Benefit",
+                #                 "account_number": "NPF-JSMITH-72",
+                #                 "notes": "Passes outside of estate to nominated beneficiary (Jane Smith). Not included in IHT or probate value.",
+                #             }
+                #         ],
+                #         "personal_chattels": {
+                #             "id": "chattels1",
+                #             "description": "Art, furniture, and personal belongings",
+                #             "ownership": "Solely Owned",
+                #             "value_at_death": 15000,
+                #             "passes_to_survivor": False,
+                #         },
+                #     },
+                #     "liabilities": {
+                #         "mortgages": [
+                #             {
+                #                 "id": "mort1",
+                #                 "property_id": "prop2",
+                #                 "provider": "City Mortgage Corp",
+                #                 "outstanding_balance": 100000,
+                #             }
+                #         ],
+                #         "credit_cards": [
+                #             {
+                #                 "id": "cc1",
+                #                 "provider": "Premier Credit",
+                #                 "outstanding_balance": 2500,
+                #             }
+                #         ],
+                #         "utility_bills": 450,
+                #         "funeral_costs": 4000,
+                #     },
+                #     "post_death_transactions": {
+                #         "assets_sold": [
+                #             {
+                #                 "asset_id": "inv1",
+                #                 "description": "Capital Investments Portfolio",
+                #                 "value_at_death": 120000,
+                #                 "sale_price": 145000,
+                #                 "costs_of_sale": 1500,
+                #             }
+                #         ],
+                #         "administration_expenses": {
+                #             "legal_fees": 3000,
+                #             "probate_fees": 273,
+                #         },
+                #         "income_received_post_death": {"bank_interest": 350},
+                #     },
+                #     "tax_and_will_details": {
+                #         "probate_thresholds": {
+                #             "hmcts": 5000,
+                #             "mainstream_bank": 50000,
+                #             "capital_investments": 25000,
+                #         },
+                #         "iht_thresholds": {
+                #             "nil_rate_band": 325000,
+                #             "residence_nil_rate_band": 175000,
+                #             "iht_rate_percent": 40,
+                #         },
+                #         "cgt_tax_rate_percent": 20,
+                #         "will_summary": {
+                #             "leaves_everything_to_spouse": True,
+                #             "spouse_name": "Jane Mary Smith",
+                #             "notes": "All assets pass to the surviving spouse. This means the estate benefits from 100% spousal exemption for IHT.",
+                #         },
+                #     },
+                # },
             )
         )
