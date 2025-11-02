@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7257d797e49b77662d8297e78320a3fd24e6e734
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -213,4 +217,3 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-node_modules
