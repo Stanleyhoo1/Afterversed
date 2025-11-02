@@ -8,27 +8,24 @@ import {
   type SurveyPayload,
 } from "@/lib/api";
 import { SESSION_STORAGE_KEY, SURVEY_STATE_STORAGE_KEY } from "@/lib/config";
+import { Calendar } from "@/components/ui/calendar";
+
+type QuestionType = "choice" | "multiple" | "date";
 
 interface Question {
   id: string;
   question: string;
-  type: "choice" | "multiple";
-  options: string[];
+  type: QuestionType;
+  options?: string[];
   required?: boolean;
 }
 
 const questions: Question[] = [
   {
-    id: "where_you_are",
-    question: "Just to help us understand where you are in this journey, which of these feels closest to where you are?",
-    type: "choice",
-    options: [
-      "This loss is very recent (in the last few days).",
-      "It has been a week or two.",
-      "It has been a few weeks or more.",
-      "I'd rather not say."
-    ],
-    required: true
+    id: "date_of_passing",
+    question: "When did they pass away?",
+    type: "date",
+    required: true,
   },
   {
     id: "overwhelming",
@@ -107,6 +104,26 @@ const questions: Question[] = [
   }
 ];
 
+const parseISODate = (value: string | undefined): Date | undefined => {
+  if (!value) {
+    return undefined;
+  }
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) {
+    return undefined;
+  }
+  const date = new Date(year, month - 1, day);
+  date.setHours(12, 0, 0, 0);
+  return date;
+};
+
+const formatISODate = (value: Date): string => {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const computeStepFromAnswers = (answerMap: Record<string, string | string[]>): number => {
   for (let i = 0; i < questions.length; i++) {
     if (!answerMap[questions[i].id]) {
@@ -122,6 +139,7 @@ const Survey = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [dateAnswer, setDateAnswer] = useState<string>("");
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -239,8 +257,14 @@ const Survey = () => {
     if (currentQuestion.type === "multiple") {
       const existing = answers[currentQuestion.id];
       setSelectedOptions(Array.isArray(existing) ? existing : []);
+      setDateAnswer("");
+    } else if (currentQuestion.type === "date") {
+      const existing = answers[currentQuestion.id];
+      setDateAnswer(typeof existing === "string" ? existing : "");
+      setSelectedOptions([]);
     } else {
       setSelectedOptions([]);
+      setDateAnswer("");
     }
   }, [answers, currentQuestion]);
 
@@ -294,6 +318,45 @@ const Survey = () => {
     },
     [answers, sessionId, toast],
   );
+
+  const handleDateSelect = useCallback(
+    (value?: Date) => {
+      if (isSubmitting || !sessionId || hasCompleted) {
+        return;
+      }
+      if (!value) {
+        setDateAnswer("");
+        setAnswers(prev => {
+          const next = { ...prev };
+          delete next[currentQuestion.id];
+          return next;
+        });
+        return;
+      }
+      const isoValue = formatISODate(value);
+      setDateAnswer(isoValue);
+      setAnswers(prev => ({
+        ...prev,
+        [currentQuestion.id]: isoValue,
+      }));
+    },
+    [currentQuestion.id, hasCompleted, isSubmitting, sessionId],
+  );
+
+  const handleDateContinue = useCallback(() => {
+    if (isSubmitting || !sessionId || hasCompleted || !dateAnswer) {
+      return;
+    }
+
+    const nextAnswers = { ...answers, [currentQuestion.id]: dateAnswer };
+    setAnswers(nextAnswers);
+
+    if (currentStep < questions.length - 1) {
+      setCurrentStep(prev => prev + 1);
+    } else {
+      handleComplete(nextAnswers);
+    }
+  }, [answers, currentQuestion.id, currentStep, dateAnswer, handleComplete, hasCompleted, isSubmitting, sessionId]);
 
   const handleChoiceSelect = useCallback((option: string) => {
     if (isSubmitting || !sessionId || hasCompleted) {
@@ -395,6 +458,15 @@ const Survey = () => {
                 {questions.map(question => {
                   const answer = answers[question.id];
                   const hasAnswer = Array.isArray(answer) ? answer.length > 0 : Boolean(answer);
+                  const formattedAnswer = Array.isArray(answer)
+                    ? undefined
+                    : question.type === "date" && typeof answer === "string"
+                      ? parseISODate(answer)?.toLocaleDateString(undefined, {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }) ?? answer
+                      : answer;
                   return (
                     <div key={question.id} className="rounded-xl border border-border bg-background p-6">
                       <h2 className="text-lg font-medium text-foreground mb-3">
@@ -408,7 +480,7 @@ const Survey = () => {
                             ))}
                           </ul>
                         ) : (
-                          <p className="text-base text-foreground/80">{answer}</p>
+                          <p className="text-base text-foreground/80">{formattedAnswer ?? ""}</p>
                         )
                       ) : (
                         <p className="text-base text-muted-foreground italic">
@@ -533,6 +605,41 @@ const Survey = () => {
                   {isSubmitting ? "Saving..." : "Continue"}
                 </button>
               </>
+            )}
+
+            {/* Date Question */}
+            {currentQuestion.type === "date" && (
+              <div className="space-y-6">
+                <Calendar
+                  mode="single"
+                  selected={dateAnswer ? parseISODate(dateAnswer) : undefined}
+                  onSelect={handleDateSelect}
+                  disabled={{ after: new Date() }}
+                  initialFocus
+                  className="mx-auto w-full max-w-[24.5rem] rounded-3xl border border-border bg-background px-5 py-5 shadow-inner"
+                  classNames={{
+                    months: "flex flex-col items-center space-y-5",
+                    month: "space-y-5",
+                    caption: "relative flex items-center justify-center",
+                    caption_label: "text-base font-semibold",
+                    head_row: "flex justify-center gap-2",
+                    head_cell: "text-muted-foreground w-11 text-xs font-semibold uppercase tracking-wide text-center",
+                    row: "flex justify-center gap-2",
+                    table: "border-collapse mx-auto",
+                    cell: "w-11 h-11 flex items-center justify-center",
+                    day: "h-11 w-11 rounded-full text-sm font-medium transition-colors flex items-center justify-center aria-selected:bg-primary aria-selected:text-primary-foreground hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    day_today: "text-red-600 font-semibold",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handleDateContinue}
+                  disabled={isSubmitting || !dateAnswer}
+                  className="w-full inline-flex items-center justify-center rounded-full bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-lg transition hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  Continue
+                </button>
+              </div>
             )}
           </div>
 
