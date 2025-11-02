@@ -10,7 +10,7 @@ const windSegmentSource = new URL("../../assets/wind.png", import.meta.url).href
 
 const polylinePoints = [
   { x: 20, y: 8 },
-  { x: 44, y: 8 },
+  { x: 44, y: 11 },
   { x: 66, y: 12 },
   { x: 85, y: 19 },
   { x: 92, y: 35 },
@@ -266,7 +266,7 @@ const TaskOverview = () => {
                           <animate
                             attributeName="opacity"
                             values="0;0.9;0"
-                            keyTimes="0;0.6;1"
+                            keyTimes="0;0.35;1"
                             dur={`${animationDuration}s`}
                             begin={`${phase * (animationDuration / 2)}s`}
                             repeatCount="indefinite"
@@ -409,21 +409,32 @@ const TaskOverview = () => {
                   filter: glowFilter,
                   transition: "filter 0.3s ease",
                 };
-
+                // Push bubbles 2-5 down by 10, 15, 20, 25 points
+                const pushDown = [0, 50, 150, 230, 325][index] || 0;
+                const handleCloudClick = () => {
+                  navigate(`/task/${task.id}`);
+                };
                 return (
                   <div
                     key={task.id}
                     className={cn(
-                      "flex w-full",
+                      "flex w-full group cursor-pointer",
                       isLeftAligned ? "justify-start" : "justify-end",
                     )}
+                    style={pushDown ? { transform: `translateY(${pushDown}px)` } : undefined}
+                    onClick={handleCloudClick}
+                    tabIndex={0}
+                    role="button"
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleCloudClick(); }}
+                    aria-label={`Go to ${task.title}`}
                   >
                     <div className={cn("relative flex flex-col", alignmentClass, edgeOffsetClass)}>
                       <div
                         className={cn(
-                          "relative w-[21.5rem] sm:w-[23rem] md:w-[24.5rem] lg:w-[26rem] aspect-[2400/1411] transition-transform duration-300 hover:scale-[1.05] overflow-visible",
+                          "relative w-[21.5rem] sm:w-[23rem] md:w-[24.5rem] lg:w-[26rem] aspect-[2400/1411] transition-transform duration-300 group-hover:scale-[1.07] group-active:scale-[0.98] overflow-visible",
                           textAlignment,
                         )}
+                        style={{ cursor: 'pointer' }}
                       >
                         <img
                           src={cloudBackground}
