@@ -4,6 +4,7 @@ import datetime as dt
 from dotenv import load_dotenv
 from google import genai
 import json
+import pathlib
 
 # --- Setup ---
 load_dotenv()
@@ -119,47 +120,58 @@ Now generate the JSON.
 """
 
 
-
-def build_master_prompt(location: str,
-                        relationship: str,
-                        jurisdiction_terms: str = "",
-                        additional_context: str = "") -> str:
+def build_master_prompt(
+    location: str,
+    relationship: str,
+    jurisdiction_terms: str = "",
+    additional_context: str = "",
+) -> str:
     # Ensure empty placeholders don't render as "None"
-    location            = location or ""
-    relationship        = relationship or ""
-    jurisdiction_terms  = jurisdiction_terms or ""
-    additional_context  = additional_context or ""
+    location = location or ""
+    relationship = relationship or ""
+    jurisdiction_terms = jurisdiction_terms or ""
+    additional_context = additional_context or ""
     return MASTER_PROMPT_TEMPLATE.format(
         location=location,
         jurisdiction_terms=jurisdiction_terms,
         relationship=relationship,
-        additional_context=additional_context
+        additional_context=additional_context,
     )
 
-def get_post_death_checklist(location: str,
-                             relationship: str,
-                             jurisdiction_terms: str = "",
-                             additional_context: str = "") -> dict:
+
+def get_post_death_checklist(
+    location: str,
+    relationship: str,
+    jurisdiction_terms: str = "",
+    additional_context: str = "",
+) -> dict:
     """
     Calls Gemini with the master prompt and returns a parsed JSON dict.
     Raises ValueError if the model does not return valid JSON.
     """
-    
+
     # Check if Gemini client is available
     if gemini_client is None:
-        raise ValueError("Gemini API client not initialized. Please set GEMINI_API_KEY in .env file")
-    
-    prompt = build_master_prompt(location, relationship, jurisdiction_terms, additional_context)
+        raise ValueError(
+            "Gemini API client not initialized. Please set GEMINI_API_KEY in .env file"
+        )
+
+    prompt = build_master_prompt(
+        location, relationship, jurisdiction_terms, additional_context
+    )
 
     result = gemini_client.models.generate_content(
         model="gemini-2.5-flash",
         contents=prompt,
     ).text
 
+    result = (
+        result[len("```json\n") : -len("```")].strip()
+        if result.startswith("```json")
+        else result
+    )
 
-    result = result[len("```json\n") : -len("```")].strip() if result.startswith("```json") else result
-
-    data = json.loads(result.strip())        # parse to Python dict
+    data = json.loads(result.strip())  # parse to Python dict
     # output = json.dumps(data, indent=2, ensure_ascii=False)
     return data
 
@@ -177,22 +189,22 @@ def get_post_death_checklist(location: str,
 
 # Test
 
-with open("test.txt", "r") as f:
+with open(str(pathlib.Path(__file__).parent / "test.txt"), "r") as f:
     test_json = f.read()
     py_obj = json.loads(test_json)  # from Python-literal string -> dict
     data = py_obj
 
 # print(data['meta'].keys())
 
-print(data['steps'][0].keys())
+print(data["steps"][0].keys())
 # print(data['steps'][0]['substeps'][0].keys())
 
-for step in data['steps']:
-    print(f"{step['automation_level']}: ", step['automation_notes'])
+for step in data["steps"]:
+    print(f"{step['automation_level']}: ", step["automation_notes"])
 
-    for substep in step['substeps']:
-        print(f"  {substep['automatable']}: ", substep['automation_reason'])
-        if substep['automatable']:
+    for substep in step["substeps"]:
+        print(f"  {substep['automatable']}: ", substep["automation_reason"])
+        if substep["automatable"]:
             print(f"    Agent Type: {substep['automation_agent_type']}")
 
     print()

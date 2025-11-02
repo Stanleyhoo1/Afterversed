@@ -1,11 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
-import { getTaskStatuses } from "@/lib/api";
-=======
 import { setStoredTaskProgress } from "@/lib/taskProgress";
 import { fetchSurveySession, getTaskStatuses } from "@/lib/api";
->>>>>>> 7318b931ba9cb3892e809d38b24ec615731c3581
 import { SESSION_STORAGE_KEY } from "@/lib/config";
 
 interface Step {
