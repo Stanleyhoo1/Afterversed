@@ -1,5 +1,8 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchSurveySession, getTaskStatuses } from "@/lib/api";
+import { SESSION_STORAGE_KEY } from "@/lib/config";
+import FinancialProcedure from "./FinancialProcedure";
 
 interface Step {
   id: string;
@@ -180,10 +183,65 @@ const Procedure = () => {
   const [currentTaskIndex, setCurrentTaskIndex] = useState<number | null>(null);
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [startedSteps, setStartedSteps] = useState<Set<string>>(new Set());
+  const [showFinancialProcedure, setShowFinancialProcedure] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
 
+  // These useMemo hooks must be called before any conditional returns (Rules of Hooks)
   const currentStep = useMemo(() => procedureSteps[currentStepIndex], [currentStepIndex]);
   const isStepStarted = useMemo(() => startedSteps.has(currentStep.id), [startedSteps, currentStep.id]);
   const progress = useMemo(() => ((currentStepIndex + 1) / procedureSteps.length) * 100, [currentStepIndex]);
+
+  // Check if user needs financial help and load completed tasks from AI agents
+  useEffect(() => {
+    const checkSession = async () => {
+      const storedSessionId = localStorage.getItem(SESSION_STORAGE_KEY);
+      if (storedSessionId) {
+        try {
+          const sessionIdNum = Number.parseInt(storedSessionId, 10);
+          const session = await fetchSurveySession(sessionIdNum);
+          
+          if (session.survey_data?.answers) {
+            const todoList = session.survey_data.answers.todo_list;
+            if (Array.isArray(todoList) && todoList.includes("Handle legal and financial matters")) {
+              setShowFinancialProcedure(true);
+            }
+          }
+          
+          // Load task statuses completed by AI agents
+          try {
+            const taskStatusesResponse = await getTaskStatuses(sessionIdNum);
+            const completedTaskIds = Object.entries(taskStatusesResponse.task_statuses)
+              .filter(([_, status]: [string, any]) => status.status === "completed")
+              .map(([taskId, _]) => taskId);
+            
+            if (completedTaskIds.length > 0) {
+              console.log("Loading completed tasks from AI agents:", completedTaskIds);
+              setCompletedTasks(new Set(completedTaskIds));
+            }
+          } catch (error) {
+            console.error("Failed to load task statuses", error);
+          }
+        } catch (error) {
+          console.error("Failed to check session", error);
+        }
+      }
+      setIsCheckingSession(false);
+    };
+    checkSession();
+  }, []);
+
+  // If user needs financial help, show the FinancialProcedure component
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg text-gray-600">Loading...</p>
+      </div>
+    );
+  }
+
+  if (showFinancialProcedure) {
+    return <FinancialProcedure />;
+  }
 
   const handleStartStep = useCallback(() => {
     setStartedSteps(prev => new Set(prev).add(currentStep.id));
@@ -304,16 +362,16 @@ const Procedure = () => {
                         key={task.id}
                         className={`
                           border-2 rounded-xl p-6 transition-all duration-300
-                          ${isCurrent ? 'border-primary bg-primary/5 shadow-lg scale-105' : 'border-border bg-background'}
+                          ${isCurrent ? 'border-primary bg-primary/5 shadow-lg scale-105' : ''}
                           ${isFaded ? 'opacity-30' : 'opacity-100'}
-                          ${isCompleted ? 'border-green-500 bg-green-50' : ''}
+                          ${isCompleted ? 'border-green-500 bg-green-100' : !isCurrent ? 'border-border bg-background' : ''}
                         `}
                       >
                         <div className="flex items-start gap-4">
                           {/* Checkbox/Status */}
                           <div className="flex-shrink-0 mt-1">
                             {isCompleted ? (
-                              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                              <div className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center">
                                 <svg className="w-4 h-4 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
                                   <path d="M5 13l4 4L19 7"></path>
                                 </svg>
@@ -327,21 +385,28 @@ const Procedure = () => {
 
                           {/* Task Content */}
                           <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-foreground mb-2">
-                              {task.title}
-                            </h3>
-                            <p className="text-base text-muted-foreground mb-3">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className={`text-lg font-semibold ${isCompleted ? 'text-green-800' : 'text-foreground'}`}>
+                                {task.title}
+                              </h3>
+                              {isCompleted && (
+                                <span className="bg-green-600 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                                  COMPLETED
+                                </span>
+                              )}
+                            </div>
+                            <p className={`text-base mb-3 ${isCompleted ? 'text-green-700' : 'text-muted-foreground'}`}>
                               {task.description}
                             </p>
                             
                             {task.action && (
-                              <p className="text-sm text-primary font-medium italic">
+                              <p className={`text-sm font-medium italic ${isCompleted ? 'text-green-600' : 'text-primary'}`}>
                                 Action: {task.action}
                               </p>
                             )}
 
                             {/* Action Buttons for Current Task */}
-                            {isCurrent && (
+                            {isCurrent && !isCompleted && (
                               <div className="mt-4 flex flex-col sm:flex-row gap-3">
                                 <button
                                   onClick={handleCompleteTask}
