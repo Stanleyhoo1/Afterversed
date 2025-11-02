@@ -544,7 +544,7 @@ const Survey = () => {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 py-12 flex flex-col items-center justify-center min-h-screen">
+      <div className="relative z-10 container mx-auto px-4 py-16 flex flex-col items-center justify-start min-h-screen">
         <div className="w-full max-w-3xl">
           {/* Question Counter */}
           <div className="text-center mb-8">
