@@ -220,7 +220,7 @@ const FuneralArrangement = () => {
                     color: '#364d63',
                   }}
                 >
-                  <div className="text-4xl mb-2">🔥</div>
+                  <div className="text-4xl mb-2">⚱️</div>
                   <h3 className="text-lg font-semibold mb-1">Cremation</h3>
                   {results.cremation.price_range && (
                     <p className="text-sm text-gray-600">{results.cremation.price_range}</p>
