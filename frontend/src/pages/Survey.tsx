@@ -6,13 +6,15 @@ import {
   createSurveySession,
   fetchSurveySession,
   submitSurveyResults,
+  generateChecklist,
+  getFinancialAssessment,
   type SurveyPayload,
 } from "@/lib/api";
 import { SESSION_STORAGE_KEY, SURVEY_STATE_STORAGE_KEY } from "@/lib/config";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
-type QuestionType = "choice" | "multiple" | "date";
+type QuestionType = "choice" | "multiple" | "date" | "text";
 
 interface Question {
   id: string;
@@ -66,14 +68,10 @@ const questions: Question[] = [
     required: true
   },
   {
-    id: "protecting_memories",
-    question: "When the time is right, many people find comfort in gathering memories.\n\nIs protecting and perhaps one day sharing memories (like photos, stories, or videos) something you might be interested in?",
-    type: "choice",
-    options: [
-      "Yes, that sounds like a lovely idea.",
-      "Maybe, but not right now.",
-      "I'm not sure."
-    ],
+    id: "place_of_death",
+    question: "Where did the death occur? Please enter the postcode (UK only).",
+    type: "text",
+    options: [],
     required: true
   }
 ];
@@ -114,6 +112,7 @@ const Survey = () => {
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [dateAnswer, setDateAnswer] = useState<string>("");
+  const [textAnswer, setTextAnswer] = useState<string>("");
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -121,6 +120,9 @@ const Survey = () => {
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [supportInput, setSupportInput] = useState("");
   const [supportMessages, setSupportMessages] = useState<Array<{ sender: "user" | "assistant"; text: string }>>([]);
+  const [isGeneratingChecklist, setIsGeneratingChecklist] = useState(false);
+  const [generatedChecklist, setGeneratedChecklist] = useState<any>(null);
+  const [needsFinancialHelp, setNeedsFinancialHelp] = useState(false);
 
   const hasCompleted = useMemo(() => Boolean(completedAt), [completedAt]);
 
@@ -177,10 +179,30 @@ const Survey = () => {
 
         } catch (error) {
           console.error("Failed to fetch remote survey state", error);
-          toast({
-            title: "Working offline",
-            description: "We'll keep your answers on this device until we can reconnect.",
-          });
+          
+          // If session not found (404), create a new one
+          if (error instanceof Error && error.message.includes("404")) {
+            console.log("Session not found, creating a new one");
+            try {
+              const created = await createSurveySession();
+              resolvedSessionId = created.session_id;
+              localStorage.setItem(SESSION_STORAGE_KEY, String(resolvedSessionId));
+              localStorage.removeItem(SURVEY_STATE_STORAGE_KEY);
+              resolvedAnswers = {};
+              console.log("Created new session:", resolvedSessionId);
+            } catch (createError) {
+              console.error("Failed to create new session", createError);
+              toast({
+                title: "Unable to start survey",
+                description: "Please refresh the page or try again later.",
+              });
+            }
+          } else {
+            toast({
+              title: "Working offline",
+              description: "We'll keep your answers on this device until we can reconnect.",
+            });
+          }
         }
 
         if (isActive) {
@@ -235,13 +257,21 @@ const Survey = () => {
       const existing = answers[currentQuestion.id];
       setSelectedOptions(Array.isArray(existing) ? existing : []);
       setDateAnswer("");
+      setTextAnswer("");
     } else if (currentQuestion.type === "date") {
       const existing = answers[currentQuestion.id];
       setDateAnswer(typeof existing === "string" ? existing : "");
       setSelectedOptions([]);
+      setTextAnswer("");
+    } else if (currentQuestion.type === "text") {
+      const existing = answers[currentQuestion.id];
+      setTextAnswer(typeof existing === "string" ? existing : "");
+      setSelectedOptions([]);
+      setDateAnswer("");
     } else {
       setSelectedOptions([]);
       setDateAnswer("");
+      setTextAnswer("");
     }
   }, [answers, currentQuestion]);
 
@@ -256,6 +286,8 @@ const Survey = () => {
       }
 
       const answersToSubmit = finalAnswers ?? answers;
+      console.log("handleComplete: starting with answers", answersToSubmit);
+      
       const payload: SurveyPayload = {
         answers: answersToSubmit,
         timestamp: new Date().toISOString(),
@@ -263,7 +295,10 @@ const Survey = () => {
 
       try {
         setIsSubmitting(true);
+        console.log("handleComplete: submitting to API", { sessionId, payload });
         await submitSurveyResults(sessionId, payload);
+        console.log("handleComplete: API submission successful");
+        
         try {
           const completionTimestamp = new Date().toISOString();
           setCompletedAt(completionTimestamp);
@@ -279,16 +314,34 @@ const Survey = () => {
         } catch (error) {
           console.error("Failed to persist completed survey state", error);
         }
+        
+        // Check if user needs financial help
+        const todoList = answersToSubmit.todo_list;
+        if (Array.isArray(todoList) && todoList.includes("Handle legal and financial matters")) {
+          setNeedsFinancialHelp(true);
+        }
+        
         toast({
           title: "All set",
           description: "We've saved your responses. You can review them below anytime.",
         });
       } catch (error) {
         console.error("Failed to submit survey results", error);
-        toast({
-          title: "Something went wrong",
-          description: "We couldn't save your survey. Please try again.",
-        });
+        
+        // If session not found, ask user to refresh
+        if (error instanceof Error && error.message.includes("404")) {
+          toast({
+            title: "Session expired",
+            description: "Your session has expired. Please refresh the page to start over.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Something went wrong",
+            description: "We couldn't save your survey. Please try again.",
+            variant: "destructive",
+          });
+        }
       } finally {
         setIsSubmitting(false);
       }
@@ -374,6 +427,39 @@ const Survey = () => {
     }
   }, [answers, currentQuestion.id, currentStep, handleComplete, hasCompleted, isSubmitting, selectedOptions, sessionId]);
 
+  const handleTextChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setTextAnswer(event.target.value);
+  }, []);
+
+  const handleTextContinue = useCallback(() => {
+    if (isSubmitting || !sessionId || hasCompleted || !textAnswer.trim()) {
+      console.log("handleTextContinue: validation failed", { 
+        isSubmitting, 
+        sessionId, 
+        hasCompleted, 
+        textAnswerLength: textAnswer.trim().length 
+      });
+      return;
+    }
+
+    console.log("handleTextContinue: proceeding with answer", textAnswer.trim());
+    const nextAnswers = { ...answers, [currentQuestion.id]: textAnswer.trim() };
+    setAnswers(nextAnswers);
+
+    if (currentStep < questions.length - 1) {
+      setCurrentStep(prev => prev + 1);
+    } else {
+      console.log("handleTextContinue: calling handleComplete with", nextAnswers);
+      handleComplete(nextAnswers);
+    }
+  }, [answers, currentQuestion.id, currentStep, textAnswer, handleComplete, hasCompleted, isSubmitting, sessionId]);
+
+  const handleTextKeyPress = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" && textAnswer.trim() && !isSubmitting) {
+      handleTextContinue();
+    }
+  }, [textAnswer, isSubmitting, handleTextContinue]);
+
   const handleBack = useCallback(() => {
     if (isSubmitting) {
       return;
@@ -395,6 +481,40 @@ const Survey = () => {
       handleComplete();
     }
   }, [currentStep, handleComplete, hasCompleted, isSubmitting, sessionId]);
+
+  const handleGenerateChecklist = useCallback(async () => {
+    if (!sessionId) {
+      toast({
+        title: "Session not ready",
+        description: "Unable to generate checklist at this time.",
+      });
+      return;
+    }
+
+    setIsGeneratingChecklist(true);
+    try {
+      const result = await generateChecklist(sessionId, {
+        location: answers.place_of_death ? `${answers.place_of_death}, UK` : "UK",
+        relationship: "Family member",
+        additional_context: "",
+      });
+      
+      setGeneratedChecklist(result.checklist);
+      toast({
+        title: "Checklist Generated!",
+        description: "Your personalized action plan is ready.",
+      });
+    } catch (error) {
+      console.error("Failed to generate checklist", error);
+      toast({
+        title: "Generation Failed",
+        description: "We couldn't create your checklist. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingChecklist(false);
+    }
+  }, [sessionId, answers, toast]);
 
   const handleSupportSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
@@ -495,6 +615,23 @@ const Survey = () => {
               >
                 View My Dashboard
               </button>
+              {needsFinancialHelp && (
+                <button
+                  type="button"
+                  onClick={() => navigate("/procedure")}
+                  className="inline-flex items-center justify-center rounded-full bg-blue-600 px-8 py-3 text-base font-semibold text-white shadow-lg transition hover:bg-blue-700"
+                >
+                  💰 Start Financial Calculations
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleGenerateChecklist}
+                disabled={isGeneratingChecklist}
+                className="inline-flex items-center justify-center rounded-full bg-green-600 px-8 py-3 text-base font-semibold text-white shadow-lg transition hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isGeneratingChecklist ? "Generating..." : "🤖 Generate AI Checklist"}
+              </button>
               <button
                 type="button"
                 onClick={() => {
@@ -507,6 +644,56 @@ const Survey = () => {
                 Update My Answers
               </button>
             </div>
+
+            {generatedChecklist && (
+              <div className="bg-card rounded-2xl shadow-2xl p-8 md:p-12 border border-green-500">
+                <h2 className="text-2xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                  🤖 AI-Generated Action Plan
+                </h2>
+                <p className="text-muted-foreground mb-6">
+                  Based on your responses, here's a personalized checklist with automated assistance:
+                </p>
+                
+                <div className="space-y-6">
+                  {generatedChecklist.steps?.slice(0, 5).map((step: any, idx: number) => (
+                    <div key={step.id} className="border-l-4 border-primary pl-4">
+                      <h3 className="font-semibold text-lg text-foreground mb-2">
+                        {idx + 1}. {step.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-2">{step.summary}</p>
+                      {step.automation_level !== "none" && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+                            {step.automation_level === "full" ? "✅ Fully Automated" : "⚡ Partially Automated"}
+                          </span>
+                        </div>
+                      )}
+                      {step.substeps && step.substeps.length > 0 && (
+                        <ul className="mt-3 space-y-1 text-sm">
+                          {step.substeps.slice(0, 3).map((substep: any) => (
+                            <li key={substep.id} className="flex items-start gap-2">
+                              <span className="text-primary mt-0.5">•</span>
+                              <span className="text-foreground/80">
+                                {substep.title}
+                                {substep.automation_agent_type && (
+                                  <span className="ml-2 text-xs text-green-600">
+                                    ({substep.automation_agent_type})
+                                  </span>
+                                )}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                <p className="text-sm text-muted-foreground mt-6 italic">
+                  Showing first 5 steps. Full checklist includes {generatedChecklist.steps?.length || 0} steps with automated assistance where possible.
+                </p>
+              </div>
+            )}
 
             {completedAt && (
               <p className="text-center text-sm text-muted-foreground">
@@ -632,6 +819,29 @@ const Survey = () => {
                   className="w-full inline-flex items-center justify-center rounded-full bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-lg transition hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   Continue
+                </button>
+              </div>
+            )}
+
+            {/* Text Question */}
+            {currentQuestion.type === "text" && (
+              <div className="space-y-6">
+                <input
+                  type="text"
+                  value={textAnswer}
+                  onChange={handleTextChange}
+                  onKeyPress={handleTextKeyPress}
+                  placeholder="Enter postcode (e.g., SW1A 1AA)"
+                  disabled={isSubmitting}
+                  className="w-full px-6 py-4 rounded-xl border-2 border-border bg-background text-base md:text-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                />
+                <button
+                  type="button"
+                  onClick={handleTextContinue}
+                  disabled={isSubmitting || !textAnswer.trim()}
+                  className="w-full inline-flex items-center justify-center rounded-full bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-lg transition hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? "Saving..." : "Continue"}
                 </button>
               </div>
             )}

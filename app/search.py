@@ -320,7 +320,8 @@ def build_general_task(user_inputs: dict, config: dict) -> str:
 # -------------------------------------------------------------------
 # Orchestrator
 # -------------------------------------------------------------------
-def run_search(user_inputs: dict):
+@tool
+def register_death(user_inputs: dict):
     """
     user_inputs example:
     {
@@ -386,18 +387,132 @@ def run_search(user_inputs: dict):
     agent = Agent(tools=tools, model=model)
     task = build_general_task(user_inputs, config)
     result = agent(task)
-    print(result)
+    # Extract the plain text (what the model produced)
+    text = getattr(result, "text", str(result)).strip()
+
+    # Remove Markdown JSON fencing if the model adds it
+    if text.startswith("```json"):
+        text = text[7:]  # remove ```json
+    if text.endswith("```"):
+        text = text[:-3]
+    text = text.strip()
+    data = json.loads(text)
+    return data
+
+# Finds funeral homes in a location
+@tool
+def find_funeral(location):
+    agent = Agent(tools=[], model=model)
+    prompt = f"""
+You are a structured data retrieval and summarization agent.
+
+TASK:
+Find the top 3 funeral homes in {location} (East London area preferred).  
+Provide 3 options for each type of service:
+1. Cremation
+2. Burial
+3. Woodland/Natural burial
+
+Return results in valid JSON only.
+
+OUTPUT FORMAT (strictly follow this schema):
+{{
+  "cremation": {{
+    "price_range": "string or null if unavailable",
+    "summary": [
+      {{
+        "name": "string",
+        "price": "string or null if unavailable",
+        "rating": "float or null",
+        "location": "string",
+        "link": "string"
+      }}
+    ]
+  }},
+  "burial": {{
+    "price_range": "string or null if unavailable",
+    "summary": [
+      {{
+        "name": "string",
+        "price": "string or null if unavailable",
+        "rating": "float or null",
+        "location": "string",
+        "link": "string"
+      }}
+    ]
+  }},
+  "woodland": {{
+    "price_range": "string or null if unavailable",
+    "summary": [
+      {{
+        "name": "string",
+        "price": "string or null if unavailable",
+        "rating": "float or null",
+        "location": "string",
+        "link": "string"
+      }}
+    ]
+  }},
+  "metadata": {{
+    "query_location": "string (e.g. 'Stratford, London, UK')",
+    "search_timestamp": "ISO 8601 datetime string",
+    "currency": "string or null (e.g. 'GBP')",
+    "notes": "string or null for any extra remarks"
+  }}
+}}
 
 
-if __name__ == "__main__":
+RULES:
+- Prefer official sources or verified funeral provider sites.
+- Focus on Stratford and nearby East London locations.
+- Prices should include currency (e.g., “£1,095”).
+- Ratings should be numeric (e.g., 4.8) if found.
+- If any data is unavailable, set the value to null.
+- Do not include commentary, text, or explanations — JSON output only.
+"""
+    # Run the agent
+    response = agent(prompt)
+
+    # Extract the plain text (what the model produced)
+    text = getattr(response, "text", str(response)).strip()
+
+    # Remove Markdown JSON fencing if the model adds it
+    if text.startswith("```json"):
+        text = text[7:]  # remove ```json
+    if text.endswith("```"):
+        text = text[:-3]
+    text = text.strip()
+    data = json.loads(text)
+    return data
+
+
+def search_agent(user_query):
     try:
-        run_search(
-            {
-                "death_location": "St. Johns Wood Terrace, London, UK",
-                "postcode": "NW8 6JJ"
-            }
+        SYS = (
+            "Return ONLY raw JSON. "
+            "If you call a tool that returns JSON/dicts, output it verbatim with no prose and no code fences."
         )
-    finally:
-        # Leave open during dev so you can see; uncomment to close.
-        # SharedBrowser.close()
-        print("Done.")
+
+        agent = Agent(
+            tools=[find_funeral, register_death],
+            model=model,
+            system_prompt=SYS  # if your Agent supports 'system'; otherwise remove
+        )
+
+        result = agent(user_query)
+
+        # Extract the plain text (what the model produced)
+        text = getattr(result, "text", str(result)).strip()
+
+        # Remove Markdown JSON fencing if the model adds it
+        if text.startswith("```json"):
+            text = text[7:]  # remove ```json
+        if text.endswith("```"):
+            text = text[:-3]
+        text = text.strip()
+        data = json.loads(text)
+
+        return data
+    except:
+        return {"error": "An error occurred during the search process."}
+

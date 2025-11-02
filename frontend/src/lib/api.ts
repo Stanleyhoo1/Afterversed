@@ -64,3 +64,82 @@ export async function submitSurveyResults(
     body: JSON.stringify(payload),
   });
 }
+
+export interface ChecklistRequest {
+  location?: string;
+  relationship?: string;
+  additional_context?: string;
+}
+
+export interface ChecklistResponse {
+  checklist: any;
+  message: string;
+}
+
+export async function generateChecklist(
+  sessionId: number,
+  data: ChecklistRequest = {},
+): Promise<ChecklistResponse> {
+  return request<ChecklistResponse>(`/sessions/${sessionId}/generate-checklist`, {
+    method: "POST",
+    body: JSON.stringify({
+      location: data.location || "UK",
+      relationship: data.relationship || "Family member",
+      additional_context: data.additional_context || "",
+    }),
+  });
+}
+
+export interface ComputationRequest {
+  user_data: any;
+  task_data: any;
+}
+
+export interface ComputationResponse {
+  results: Array<{ id: string; body: string }>;
+  message: string;
+}
+
+export async function runComputations(
+  sessionId: number,
+  data: ComputationRequest,
+): Promise<ComputationResponse> {
+  return request<ComputationResponse>(`/sessions/${sessionId}/compute`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export interface FinancialAssessmentResponse {
+  needs_probate_check: boolean;
+  needs_iht_calculation: boolean;
+  needs_estate_valuation: boolean;
+  message: string;
+  next_steps: string[];
+}
+
+export async function getFinancialAssessment(
+  sessionId: number,
+): Promise<FinancialAssessmentResponse> {
+  return request<FinancialAssessmentResponse>(`/sessions/${sessionId}/financial-assessment`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+}
+
+export interface TaskStatus {
+  status: "completed" | "in_progress" | "pending";
+  updated_at: string;
+  results: any;
+}
+
+export interface TaskStatusesResponse {
+  session_id: number;
+  task_statuses: Record<string, TaskStatus>;
+}
+
+export async function getTaskStatuses(
+  sessionId: number,
+): Promise<TaskStatusesResponse> {
+  return request<TaskStatusesResponse>(`/sessions/${sessionId}/task-statuses`);
+}
